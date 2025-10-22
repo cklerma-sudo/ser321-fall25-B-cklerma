@@ -52,7 +52,7 @@ task runFraction(type: JavaExec) {
 }
 
 task runFrac(type: JavaExec) {
-  group 'Fraction Tasks'
+  group = 'Fraction Tasks'
   description 'Tasks which runs Fraction with zero, one, or two arguments. Order does not matter.'
 
   def numerator = project.findProperty("num") ?: "1"
