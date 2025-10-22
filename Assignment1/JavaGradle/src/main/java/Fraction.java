@@ -39,7 +39,7 @@ public class Fraction {
 
    public static void main (String args[]) {
       try {
-         if (args.length() < 2){
+         if (args.length < 2){
             System.out.println("Usage: java Fraction <numerator> <denominator>");
             return;
          }
