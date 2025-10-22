@@ -39,13 +39,19 @@ public class Fraction {
 
    public static void main (String args[]) {
       try {
+         if (args < 2){
+            System.out.println("Usage: java Fraction <numerator> <denominator>");
+            return;
+         }
          // create a new instance
          // Fraction *frac = [[Fraction alloc] init];
+         int numerator = Integer.parse(args[0]);
+         int denominator = Integer.parse(args[1]);
          Fraction frac = new Fraction();
 
          // set the values
-         frac.setNumerator(1);
-         frac.setDenominator(3);
+         frac.setNumerator(numerator);
+         frac.setDenominator(denominator);
 
          // print it
          System.out.print("The fraction is: ");
