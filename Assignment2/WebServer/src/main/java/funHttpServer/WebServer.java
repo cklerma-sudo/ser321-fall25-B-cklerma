@@ -25,341 +25,525 @@ import java.util.Random;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.nio.charset.Charset;
+import org.json.*;
+import java.util.List;
 
 class WebServer {
-  public static void main(String args[]) {
-    WebServer server = new WebServer(9000);
-  }
+    public static void main(String args[]) {
+        WebServer server = new WebServer(9000);
+    }
 
-  /**
-   * Main thread
-   * @param port to listen on
-   */
-  public WebServer(int port) {
-    ServerSocket server = null;
-    Socket sock = null;
-    InputStream in = null;
-    OutputStream out = null;
+    /**
+     * Main thread
+     * @param port to listen on
+     */
+    public WebServer(int port) {
+        ServerSocket server = null;
+        Socket sock = null;
+        InputStream in = null;
+        OutputStream out = null;
 
-    try {
-      server = new ServerSocket(port);
-      while (true) {
-        sock = server.accept();
-        out = sock.getOutputStream();
-        in = sock.getInputStream();
-        byte[] response = createResponse(in);
-        out.write(response);
-        out.flush();
-        in.close();
-        out.close();
-        sock.close();
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
-    } finally {
-      if (sock != null) {
         try {
-          server.close();
+            server = new ServerSocket(port);
+            while (true) {
+                sock = server.accept();
+                out = sock.getOutputStream();
+                in = sock.getInputStream();
+                byte[] response = createResponse(in);
+                out.write(response);
+                out.flush();
+                in.close();
+                out.close();
+                sock.close();
+            }
         } catch (IOException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
+            e.printStackTrace();
+        } finally {
+            if (sock != null) {
+                try {
+                    server.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
-      }
     }
-  }
 
-  /**
-   * Used in the "/random" endpoint
-   */
-  private final static HashMap<String, String> _images = new HashMap<>() {
-    {
-      put("streets", "https://iili.io/JV1pSV.jpg");
-      put("bread", "https://iili.io/Jj9MWG.jpg");
-    }
-  };
+    /**
+     * Used in the "/random" endpoint
+     */
+    private final static HashMap<String, String> _images = new HashMap<>() {
+        {
+            put("streets", "https://iili.io/JV1pSV.jpg");
+            put("bread", "https://iili.io/Jj9MWG.jpg");
+        }
+    };
 
-  private Random random = new Random();
+    private Random random = new Random();
 
-  /**
-   * Reads in socket stream and generates a response
-   * @param inStream HTTP input stream from socket
-   * @return the byte encoded HTTP response
-   */
-  public byte[] createResponse(InputStream inStream) {
+    /**
+     * Reads in socket stream and generates a response
+     * @param inStream HTTP input stream from socket
+     * @return the byte encoded HTTP response
+     */
+    public byte[] createResponse(InputStream inStream) {
 
-    byte[] response = null;
-    BufferedReader in = null;
+        byte[] response = null;
+        BufferedReader in = null;
 
-    try {
+        try {
 
-      // Read from socket's input stream. Must use an
-      // InputStreamReader to bridge from streams to a reader
-      in = new BufferedReader(new InputStreamReader(inStream, "UTF-8"));
+            // Read from socket's input stream. Must use an
+            // InputStreamReader to bridge from streams to a reader
+            in = new BufferedReader(new InputStreamReader(inStream, "UTF-8"));
 
-      // Get header and save the request from the GET line:
-      // example GET format: GET /index.html HTTP/1.1
+            // Get header and save the request from the GET line:
+            // example GET format: GET /index.html HTTP/1.1
 
-      String request = null;
+            String request = null;
 
-      boolean done = false;
-      while (!done) {
-        String line = in.readLine();
+            boolean done = false;
+            while (!done) {
+                String line = in.readLine();
 
-        System.out.println("Received: " + line);
+                System.out.println("Received: " + line);
 
-        // find end of header("\n\n")
-        if (line == null || line.equals(""))
-          done = true;
-        // parse GET format ("GET <path> HTTP/1.1")
-        else if (line.startsWith("GET")) {
-          int firstSpace = line.indexOf(" ");
-          int secondSpace = line.indexOf(" ", firstSpace + 1);
+                // find end of header("\n\n")
+                if (line == null || line.equals(""))
+                    done = true;
+                    // parse GET format ("GET <path> HTTP/1.1")
+                else if (line.startsWith("GET")) {
+                    int firstSpace = line.indexOf(" ");
+                    int secondSpace = line.indexOf(" ", firstSpace + 1);
 
-          // extract the request, basically everything after the GET up to HTTP/1.1
-          request = line.substring(firstSpace + 2, secondSpace);
+                    // extract the request, basically everything after the GET up to HTTP/1.1
+                    request = line.substring(firstSpace + 2, secondSpace);
+                }
+
+            }
+            System.out.println("FINISHED PARSING HEADER\n");
+
+            // Generate an appropriate response to the user
+            if (request == null) {
+                response = "<html>Illegal request: no GET</html>".getBytes();
+            } else {
+                // create output buffer
+                StringBuilder builder = new StringBuilder();
+                // NOTE: output from buffer is at the end
+
+                if (request.length() == 0) {
+                    // shows the default directory page
+
+                    // opens the root.html file
+                    String page = new String(readFileInBytes(new File("www/root.html")));
+                    // performs a template replacement in the page
+                    page = page.replace("${links}", buildFileList());
+
+                    // Generate response
+                    builder.append("HTTP/1.1 200 OK\n");
+                    builder.append("Content-Type: text/html; charset=utf-8\n");
+                    builder.append("\n");
+                    builder.append(page);
+
+                } else if (request.equalsIgnoreCase("json")) {
+                    // shows the JSON of a random image and sets the header name for that image
+
+                    // pick a index from the map
+                    int index = random.nextInt(_images.size());
+
+                    // pull out the information
+                    String header = (String) _images.keySet().toArray()[index];
+                    String url = _images.get(header);
+
+                    // Generate response
+                    builder.append("HTTP/1.1 200 OK\n");
+                    builder.append("Content-Type: application/json; charset=utf-8\n");
+                    builder.append("\n");
+                    builder.append("{");
+                    builder.append("\"header\":\"").append(header).append("\",");
+                    builder.append("\"image\":\"").append(url).append("\"");
+                    builder.append("}");
+
+                } else if (request.equalsIgnoreCase("random")) {
+                    // opens the random image page
+
+                    // open the index.html
+                    File file = new File("www/index.html");
+
+                    // Generate response
+                    builder.append("HTTP/1.1 200 OK\n");
+                    builder.append("Content-Type: text/html; charset=utf-8\n");
+                    builder.append("\n");
+                    builder.append(new String(readFileInBytes(file)));
+
+                } else if (request.contains("file/")) {
+                    // tries to find the specified file and shows it or shows an error
+
+                    // take the path and clean it. try to open the file
+                    File file = new File(request.replace("file/", ""));
+
+                    // Generate response
+                    if (file.exists()) { // success
+                        builder.append("HTTP/1.1 200 OK\n");
+                        builder.append("Content-Type: text/html; charset=utf-8\n");
+                        builder.append("\n");
+                        builder.append("Would theoretically be a file but removed this part, you do not have to do anything with it for the assignment");
+                    } else { // failure
+                        builder.append("HTTP/1.1 404 Not Found\n");
+                        builder.append("Content-Type: text/html; charset=utf-8\n");
+                        builder.append("\n");
+                        builder.append("File not found: " + file);
+                    }
+                }
+                else if (request.contains("multiply?")) {
+                    Map<String, String> query_pairs = new LinkedHashMap<>();
+
+                    try {
+                        query_pairs = splitQuery(request.replace("multiply?", ""));
+
+                        if (!query_pairs.containsKey("num1") || !query_pairs.containsKey("num2")) {
+                            throw new IllegalArgumentException("Missing parameters 'num1' and/or 'num2'.");
+                        }
+
+                        int num1 = Integer.parseInt(query_pairs.get("num1"));
+                        int num2 = Integer.parseInt(query_pairs.get("num2"));
+                        int result = num1 * num2;
+
+                        builder.append("HTTP/1.1 200 OK\n");
+                        builder.append("Content-Type: text/html; charset=utf-8\n");
+                        builder.append("\n");
+                        builder.append("Result is: " + result);
+
+                    } catch (NumberFormatException e) {
+                        builder.append("HTTP/1.1 400 Bad Request\n");
+                        builder.append("Content-Type: text/html; charset=utf-8\n");
+                        builder.append("\n");
+                        builder.append("Error: num1 and num2 must be valid integers.");
+                    } catch (IllegalArgumentException e) {
+                        builder.append("HTTP/1.1 400 Bad Request\n");
+                        builder.append("Content-Type: text/html; charset=utf-8\n");
+                        builder.append("\n");
+                        builder.append("Error: " + e.getMessage());
+                    } catch (Exception e) {
+                        builder.append("HTTP/1.1 500 Internal Server Error\n");
+                        builder.append("Content-Type: text/html; charset=utf-8\n");
+                        builder.append("\n");
+                        builder.append("Unexpected error occurred: " + e.getMessage());
+                    }
+            }
+                else if (request.contains("github?")) {
+                    // pulls the query from the request and runs it with GitHub's REST API
+                    // check out https://docs.github.com/rest/reference/
+                    //
+                    // HINT: REST is organized by nesting topics. Figure out the biggest one first,
+                    //     then drill down to what you care about
+                    // "Owner's repo is named RepoName. Example: find RepoName's contributors" translates to
+                    //     "/repos/OWNERNAME/REPONAME/contributors"
+
+                    Map<String, String> query_pairs = new LinkedHashMap<>();
+                    query_pairs = splitQuery(request.replace("github?", ""));
+
+                    outer:
+                    {
+                        try {
+                            String path = query_pairs.get("query");
+                            if (path == null || path.isBlank()) {
+                                sendPlain(builder, 400, "Missing 'query' parameter. Example:\ngithub?query=users/octocat/repos");
+                                break outer;
+                            }
+
+                            String json = fetchURL("https://api.github.com/" + path);
+                            if (json == null) {
+                                sendPlain(builder, 500, "Empty response from GitHub.");
+                                break outer;
+                            }
+
+                            String trimmed = json.stripLeading();
+                            List<JSONObject> repoList = new ArrayList<>();
+
+                            if (trimmed.startsWith("[")) {
+                                JSONArray arr = new JSONArray(trimmed);
+                                for (int i = 0; i < arr.length(); i++) {
+                                    JSONObject repo = arr.optJSONObject(i);
+                                    if (repo != null) repoList.add(repo);
+                                }
+                            } else if (trimmed.startsWith("{")) {
+                                JSONObject root = new JSONObject(trimmed);
+
+                                if (root.has("message") && !root.has("items") && !root.has("name")) {
+                                    sendPlain(builder, 502, "GitHub error: " + root.optString("message", "Unknown error"));
+                                    break outer;
+                                }
+
+                                JSONArray items = root.optJSONArray("items");
+                                if (items != null) {
+                                    for (int i = 0; i < items.length(); i++) {
+                                        JSONObject repo = items.optJSONObject(i);
+                                        if (repo != null) repoList.add(repo);
+                                    }
+                                } else {
+                                    break outer;
+                                }
+                            } else {
+                                sendPlain(builder, 502, "Unexpected response shape from GitHub.");
+                                break outer;
+                            }
+
+                            StringBuilder result = new StringBuilder();
+                            if (repoList.isEmpty()) {
+                                result.append("No repositories found.\n");
+                            } else {
+                                for (JSONObject repo : repoList) {
+                                    String name = repo.optString("name", "(unknown)");
+                                    long id = repo.optLong("id", -1L);
+                                    JSONObject owner = repo.optJSONObject("owner");
+                                    String login = owner != null ? owner.optString("login", "(unknown)") : "(unknown owner)";
+
+                                    result.append("[Repo Name: ").append(name)
+                                            .append(" Repo ID: ").append(id >= 0 ? String.valueOf(id) : "(unknown)")
+                                            .append(" Owner: ").append(login)
+                                            .append("]\n");
+                                }
+                            }
+
+                            builder.append("HTTP/1.1 200 OK\n");
+                            builder.append("Content-Type: text/plain; charset=utf-8\n");
+                            builder.append("\n");
+                            builder.append(result.toString());
+
+                        } catch (org.json.JSONException je) {
+                            sendPlain(builder, 502, "Failed to parse GitHub JSON.");
+                        } catch (Exception e) {
+                            sendPlain(builder, 500, "Request to GitHub failed.");
+                        }
+                    }
+
+                }
+                else if(request.contains("printMultiString?")){
+                    Map<String, String> query_pairs = new LinkedHashMap<>();
+
+                    try {
+                        query_pairs = splitQuery(request.replace("printMultiString?", ""));
+
+                        if (!query_pairs.containsKey("string") || !query_pairs.containsKey("amount")) {
+                            throw new IllegalArgumentException("Missing parameters 'string' and/or 'amount'.");
+                        }
+
+                        String input = query_pairs.get("string");
+                        int amount = Integer.parseInt(query_pairs.get("amount"));
+                        if (amount <= 0) {
+                            throw new NumberFormatException();
+                        }
+                        if (input == null || input.isBlank()) {
+                            throw new IllegalArgumentException("String must be a non-empty string.");
+                        }
+                        StringBuilder result = new StringBuilder();
+                        for (int i = 0; i < amount; i++) {
+                            result.append(input);
+                        }
+
+                        builder.append("HTTP/1.1 200 OK\n");
+                        builder.append("Content-Type: text/html; charset=utf-8\n");
+                        builder.append("\n");
+                        builder.append("Result is: " + result);
+
+                    } catch (NumberFormatException e) {
+                        builder.append("HTTP/1.1 400 Bad Request\n");
+                        builder.append("Content-Type: text/html; charset=utf-8\n");
+                        builder.append("\n");
+                        builder.append("Error: amount must be a valid integer and more than zero.");
+                    } catch (IllegalArgumentException e) {
+                        builder.append("HTTP/1.1 400 Bad Request\n");
+                        builder.append("Content-Type: text/html; charset=utf-8\n");
+                        builder.append("\n");
+                        builder.append("Error: " + e.getMessage());
+                    } catch (Exception e) {
+                        builder.append("HTTP/1.1 500 Internal Server Error\n");
+                        builder.append("Content-Type: text/html; charset=utf-8\n");
+                        builder.append("\n");
+                        builder.append("Unexpected error occurred: " + e.getMessage());
+                    }
+
+
+                }
+                else if (request.contains("randomNumber?")) {
+                    Map<String, String> query_pairs = new LinkedHashMap<>();
+                    try {
+                        query_pairs = splitQuery(request.replace("randomNumber?", ""));
+
+                        if (!query_pairs.containsKey("min") || !query_pairs.containsKey("max")) {
+                            throw new IllegalArgumentException("Missing parameters 'min' and/or 'max'.");
+                        }
+
+                        int min = Integer.parseInt(query_pairs.get("min"));
+                        int max = Integer.parseInt(query_pairs.get("max"));
+                        if (min > max) {
+                            throw new IllegalArgumentException("Max must be greater than min.");
+                        }
+                        Random rand = new Random();
+                        int random = rand.nextInt((max - min) + 1) + min;
+
+                        builder.append("HTTP/1.1 200 OK\n");
+                        builder.append("Content-Type: text/html; charset=utf-8\n");
+                        builder.append("\n");
+                        builder.append("Result is: " + random);
+
+                    } catch (NumberFormatException e) {
+                        builder.append("HTTP/1.1 400 Bad Request\n");
+                        builder.append("Content-Type: text/html; charset=utf-8\n");
+                        builder.append("\n");
+                        builder.append("Error: amount must be a valid integer.");
+                    } catch (IllegalArgumentException e) {
+                        builder.append("HTTP/1.1 400 Bad Request\n");
+                        builder.append("Content-Type: text/html; charset=utf-8\n");
+                        builder.append("\n");
+                        builder.append("Error: " + e.getMessage());
+                    } catch (Exception e) {
+                        builder.append("HTTP/1.1 500 Internal Server Error\n");
+                        builder.append("Content-Type: text/html; charset=utf-8\n");
+                        builder.append("\n");
+                        builder.append("Unexpected error occurred: " + e.getMessage());
+                    }
+                }
+                else {
+                    // if the request is not recognized at all
+
+                    builder.append("HTTP/1.1 400 Bad Request\n");
+                    builder.append("Content-Type: text/html; charset=utf-8\n");
+                    builder.append("\n");
+                    builder.append("I am not sure what you want me to do...");
+                }
+
+                // Output
+                response = builder.toString().getBytes();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            response = ("<html>ERROR: " + e.getMessage() + "</html>").getBytes();
         }
 
-      }
-      System.out.println("FINISHED PARSING HEADER\n");
+        return response;
+    }
 
-      // Generate an appropriate response to the user
-      if (request == null) {
-        response = "<html>Illegal request: no GET</html>".getBytes();
-      } else {
-        // create output buffer
-        StringBuilder builder = new StringBuilder();
-        // NOTE: output from buffer is at the end
+    private static void sendPlain(StringBuilder b, int status, String msg) {
+        String reason = switch (status) {
+            case 400 -> "Bad Request";
+            case 401 -> "Unauthorized";
+            case 403 -> "Forbidden";
+            case 404 -> "Not Found";
+            case 429 -> "Too Many Requests";
+            case 500 -> "Internal Server Error";
+            case 502 -> "Bad Gateway";
+            case 503 -> "Service Unavailable";
+            default -> "OK";
+        };
+        b.append("HTTP/1.1 ").append(status).append(" ").append(reason).append("\n")
+                .append("Content-Type: text/plain; charset=utf-8\n\n")
+                .append(msg).append("\n");
+    }
 
-        if (request.length() == 0) {
-          // shows the default directory page
+    /**
+     * Method to read in a query and split it up correctly
+     * @param query parameters on path
+     * @return Map of all parameters and their specific values
+     * @throws UnsupportedEncodingException If the URLs aren't encoded with UTF-8
+     */
+    public static Map<String, String> splitQuery(String query) throws UnsupportedEncodingException {
+        Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+        // "q=hello+world%2Fme&bob=5"
+        String[] pairs = query.split("&");
+        // ["q=hello+world%2Fme", "bob=5"]
+        for (String pair : pairs) {
+            int idx = pair.indexOf("=");
+            query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"),
+                    URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+        }
+        // {{"q", "hello world/me"}, {"bob","5"}}
+        return query_pairs;
+    }
 
-          // opens the root.html file
-          String page = new String(readFileInBytes(new File("www/root.html")));
-          // performs a template replacement in the page
-          page = page.replace("${links}", buildFileList());
+    /**
+     * Builds an HTML file list from the www directory
+     * @return HTML string output of file list
+     */
+    public static String buildFileList() {
+        ArrayList<String> filenames = new ArrayList<>();
 
-          // Generate response
-          builder.append("HTTP/1.1 200 OK\n");
-          builder.append("Content-Type: text/html; charset=utf-8\n");
-          builder.append("\n");
-          builder.append(page);
+        // Creating a File object for directory
+        File directoryPath = new File("www/");
+        filenames.addAll(Arrays.asList(directoryPath.list()));
 
-        } else if (request.equalsIgnoreCase("json")) {
-          // shows the JSON of a random image and sets the header name for that image
-
-          // pick a index from the map
-          int index = random.nextInt(_images.size());
-
-          // pull out the information
-          String header = (String) _images.keySet().toArray()[index];
-          String url = _images.get(header);
-
-          // Generate response
-          builder.append("HTTP/1.1 200 OK\n");
-          builder.append("Content-Type: application/json; charset=utf-8\n");
-          builder.append("\n");
-          builder.append("{");
-          builder.append("\"header\":\"").append(header).append("\",");
-          builder.append("\"image\":\"").append(url).append("\"");
-          builder.append("}");
-
-        } else if (request.equalsIgnoreCase("random")) {
-          // opens the random image page
-
-          // open the index.html
-          File file = new File("www/index.html");
-
-          // Generate response
-          builder.append("HTTP/1.1 200 OK\n");
-          builder.append("Content-Type: text/html; charset=utf-8\n");
-          builder.append("\n");
-          builder.append(new String(readFileInBytes(file)));
-
-        } else if (request.contains("file/")) {
-          // tries to find the specified file and shows it or shows an error
-
-          // take the path and clean it. try to open the file
-          File file = new File(request.replace("file/", ""));
-
-          // Generate response
-          if (file.exists()) { // success
-            builder.append("HTTP/1.1 200 OK\n");
-            builder.append("Content-Type: text/html; charset=utf-8\n");
-            builder.append("\n");
-            builder.append("Would theoretically be a file but removed this part, you do not have to do anything with it for the assignment");
-          } else { // failure
-            builder.append("HTTP/1.1 404 Not Found\n");
-            builder.append("Content-Type: text/html; charset=utf-8\n");
-            builder.append("\n");
-            builder.append("File not found: " + file);
-          }
-        } else if (request.contains("multiply?")) {
-          // This multiplies two numbers, there is NO error handling, so when
-          // wrong data is given this just crashes
-
-          Map<String, String> query_pairs = new LinkedHashMap<String, String>();
-          // extract path parameters
-          query_pairs = splitQuery(request.replace("multiply?", ""));
-
-          // extract required fields from parameters
-          Integer num1 = Integer.parseInt(query_pairs.get("num1"));
-          Integer num2 = Integer.parseInt(query_pairs.get("num2"));
-
-          // do math
-          Integer result = num1 * num2;
-
-          // Generate response
-          builder.append("HTTP/1.1 200 OK\n");
-          builder.append("Content-Type: text/html; charset=utf-8\n");
-          builder.append("\n");
-          builder.append("Result is: " + result);
-
-          // TODO: Include error handling here with a correct error code and
-          // a response that makes sense
-
-        } else if (request.contains("github?")) {
-          // pulls the query from the request and runs it with GitHub's REST API
-          // check out https://docs.github.com/rest/reference/
-          //
-          // HINT: REST is organized by nesting topics. Figure out the biggest one first,
-          //     then drill down to what you care about
-          // "Owner's repo is named RepoName. Example: find RepoName's contributors" translates to
-          //     "/repos/OWNERNAME/REPONAME/contributors"
-
-          Map<String, String> query_pairs = new LinkedHashMap<String, String>();
-          query_pairs = splitQuery(request.replace("github?", ""));
-          String json = fetchURL("https://api.github.com/" + query_pairs.get("query"));
-          System.out.println(json);
-
-          builder.append("HTTP/1.1 200 OK\n");
-          builder.append("Content-Type: text/html; charset=utf-8\n");
-          builder.append("\n");
-          builder.append("Check the todos mentioned in the Java source file");
-          // TODO: Parse the JSON returned by your fetch and create an appropriate
-          // response based on what the assignment document asks for
-
+        if (filenames.size() > 0) {
+            StringBuilder builder = new StringBuilder();
+            builder.append("<ul>\n");
+            for (var filename : filenames) {
+                builder.append("<li>" + filename + "</li>");
+            }
+            builder.append("</ul>\n");
+            return builder.toString();
         } else {
-          // if the request is not recognized at all
-
-          builder.append("HTTP/1.1 400 Bad Request\n");
-          builder.append("Content-Type: text/html; charset=utf-8\n");
-          builder.append("\n");
-          builder.append("I am not sure what you want me to do...");
+            return "No files in directory";
         }
-
-        // Output
-        response = builder.toString().getBytes();
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
-      response = ("<html>ERROR: " + e.getMessage() + "</html>").getBytes();
     }
 
-    return response;
-  }
+    /**
+     * Read bytes from a file and return them in the byte array. We read in blocks
+     * of 512 bytes for efficiency.
+     */
+    public static byte[] readFileInBytes(File f) throws IOException {
 
-  /**
-   * Method to read in a query and split it up correctly
-   * @param query parameters on path
-   * @return Map of all parameters and their specific values
-   * @throws UnsupportedEncodingException If the URLs aren't encoded with UTF-8
-   */
-  public static Map<String, String> splitQuery(String query) throws UnsupportedEncodingException {
-    Map<String, String> query_pairs = new LinkedHashMap<String, String>();
-    // "q=hello+world%2Fme&bob=5"
-    String[] pairs = query.split("&");
-    // ["q=hello+world%2Fme", "bob=5"]
-    for (String pair : pairs) {
-      int idx = pair.indexOf("=");
-      query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"),
-          URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
-    }
-    // {{"q", "hello world/me"}, {"bob","5"}}
-    return query_pairs;
-  }
+        FileInputStream file = new FileInputStream(f);
+        ByteArrayOutputStream data = new ByteArrayOutputStream(file.available());
 
-  /**
-   * Builds an HTML file list from the www directory
-   * @return HTML string output of file list
-   */
-  public static String buildFileList() {
-    ArrayList<String> filenames = new ArrayList<>();
-
-    // Creating a File object for directory
-    File directoryPath = new File("www/");
-    filenames.addAll(Arrays.asList(directoryPath.list()));
-
-    if (filenames.size() > 0) {
-      StringBuilder builder = new StringBuilder();
-      builder.append("<ul>\n");
-      for (var filename : filenames) {
-        builder.append("<li>" + filename + "</li>");
-      }
-      builder.append("</ul>\n");
-      return builder.toString();
-    } else {
-      return "No files in directory";
-    }
-  }
-
-  /**
-   * Read bytes from a file and return them in the byte array. We read in blocks
-   * of 512 bytes for efficiency.
-   */
-  public static byte[] readFileInBytes(File f) throws IOException {
-
-    FileInputStream file = new FileInputStream(f);
-    ByteArrayOutputStream data = new ByteArrayOutputStream(file.available());
-
-    byte buffer[] = new byte[512];
-    int numRead = file.read(buffer);
-    while (numRead > 0) {
-      data.write(buffer, 0, numRead);
-      numRead = file.read(buffer);
-    }
-    file.close();
-
-    byte[] result = data.toByteArray();
-    data.close();
-
-    return result;
-  }
-
-  /**
-   *
-   * a method to make a web request. Note that this method will block execution
-   * for up to 20 seconds while the request is being satisfied. Better to use a
-   * non-blocking request.
-   * 
-   * @param aUrl the String indicating the query url for the OMDb api search
-   * @return the String result of the http request.
-   *
-   **/
-  public String fetchURL(String aUrl) {
-    StringBuilder sb = new StringBuilder();
-    URLConnection conn = null;
-    InputStreamReader in = null;
-    try {
-      URL url = new URL(aUrl);
-      conn = url.openConnection();
-      if (conn != null)
-        conn.setReadTimeout(20 * 1000); // timeout in 20 seconds
-      if (conn != null && conn.getInputStream() != null) {
-        in = new InputStreamReader(conn.getInputStream(), Charset.defaultCharset());
-        BufferedReader br = new BufferedReader(in);
-        if (br != null) {
-          int ch;
-          // read the next character until end of reader
-          while ((ch = br.read()) != -1) {
-            sb.append((char) ch);
-          }
-          br.close();
+        byte buffer[] = new byte[512];
+        int numRead = file.read(buffer);
+        while (numRead > 0) {
+            data.write(buffer, 0, numRead);
+            numRead = file.read(buffer);
         }
-      }
-      in.close();
-    } catch (Exception ex) {
-      System.out.println("Exception in url request:" + ex.getMessage());
+        file.close();
+
+        byte[] result = data.toByteArray();
+        data.close();
+
+        return result;
     }
-    return sb.toString();
-  }
+
+    /**
+     *
+     * a method to make a web request. Note that this method will block execution
+     * for up to 20 seconds while the request is being satisfied. Better to use a
+     * non-blocking request.
+     *
+     * @param aUrl the String indicating the query url for the OMDb api search
+     * @return the String result of the http request.
+     *
+     **/
+    public String fetchURL(String aUrl) {
+        StringBuilder sb = new StringBuilder();
+        URLConnection conn = null;
+        InputStreamReader in = null;
+        try {
+            URL url = new URL(aUrl);
+            conn = url.openConnection();
+            if (conn != null)
+                conn.setReadTimeout(20 * 1000); // timeout in 20 seconds
+            if (conn != null && conn.getInputStream() != null) {
+                in = new InputStreamReader(conn.getInputStream(), Charset.defaultCharset());
+                BufferedReader br = new BufferedReader(in);
+                if (br != null) {
+                    int ch;
+                    // read the next character until end of reader
+                    while ((ch = br.read()) != -1) {
+                        sb.append((char) ch);
+                    }
+                    br.close();
+                }
+            }
+            in.close();
+        } catch (Exception ex) {
+            System.out.println("Exception in url request:" + ex.getMessage());
+        }
+        return sb.toString();
+    }
 }
