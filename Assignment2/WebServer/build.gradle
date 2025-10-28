@@ -27,5 +27,8 @@ task FunWebServer(type: JavaExec) {
 dependencies {
     implementation 'org.json:json:20240303'
 }
+repositories {
+    mavenCentral()
+}
 
 
