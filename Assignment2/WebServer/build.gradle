@@ -24,4 +24,8 @@ task FunWebServer(type: JavaExec) {
   standardInput = System.in
 }
 
+dependencies {
+    implementation 'org.json:json:20240303'
+}
+
 
