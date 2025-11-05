@@ -91,7 +91,11 @@ class SockClient {
         if (res.getBoolean("ok")){
           if (res.getString("type").equals("echo")) {
             System.out.println(res.getString("echo"));
-          } else {
+          } 
+           else if (res.getString("type").equals("stringconcatenation")){
+            System.out.println(res.getString("result"));
+          }
+          else {
             System.out.println(res.getInt("result"));
           }
         } else {
