@@ -68,7 +68,7 @@ class SockClient {
             System.out.println("Enter second string:");
             String str2 = scanner.nextLine();
             json.put("type", "stringconcatenation");
-            json.put("string_1", str1);
+            json.put("string1", str1);
             json.put("string2", str2);
             break;
             // TODO: implement temperature (4) or cart services (5)
