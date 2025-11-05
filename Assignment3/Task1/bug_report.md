@@ -26,37 +26,35 @@ This is so that the server can actually find what the first string is.
 **How did you find this:**
 Just used a basic two inputs "race" and "car" to see that the first string was not being found.
 
-### Bug #2:  <NAME>
-**Location:** `Filename`, line xxx
+### Bug #2:  No "type" in server response
+**Location:** `SockServer`, line 186
 
 **The Problem:**
-```Describe
-```
+In the response there was not type key paired with stringconcatenation
 
 **The Fix:**
-```Solution
-```
+In the JSON respone add the correct pairing
 
 **Why it matters:** 
-
+The client expects this is the response and a lack of it causes the client to crash
 
 **How did you find this:**
+Just used a basic two inputs "race" and "car" to see that the client program crashes and that the response is incorrectly formatted.
 
-### Bug #3:  <NAME>
-**Location:** `Filename`, line xxx
+### Bug #3:  concat instead of result
+**Location:** `SockServer`, line 185
 
 **The Problem:**
-```Describe
-```
+The result is labelled as "concat" instead of "result" in the response.
 
 **The Fix:**
-```Solution
-```
+Change "concat" to result.
 
 **Why it matters:** 
-
+The client expects the result to be labelled as result in the response and when it cannot find it, it causes an error.
 
 **How did you find this:**
+Just used a basic two inputs "race" and "car" to see that the client program has an error and seeing the format is incorect.
 
 ### Bug #4:  <NAME>
 **Location:** `Filename`, line xxx
