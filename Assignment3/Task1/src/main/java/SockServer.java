@@ -182,8 +182,8 @@ public class SockServer {
 
     String str1 = req.getString("string1");
     String str2 = req.getString("string2");
-    res.put("concat", str1 + str2);
-
+    res.put("result", str1 + str2);
+    res.put("type", "stringconcatenation")
     return res;
   }
 
