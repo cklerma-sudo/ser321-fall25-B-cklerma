@@ -25,4 +25,68 @@ The Correct Protocolis in the README.md
 
 **How did you find this:**
 
-Repeat for other bugs
+### Bug #1:  <NAME>
+**Location:** `Filename`, line xxx
+
+**The Problem:**
+```Describe
+```
+
+**The Fix:**
+```Solution
+```
+
+**Why it matters:** 
+
+
+**How did you find this:**
+
+### Bug #2:  <NAME>
+**Location:** `Filename`, line xxx
+
+**The Problem:**
+```Describe
+```
+
+**The Fix:**
+```Solution
+```
+
+**Why it matters:** 
+
+
+**How did you find this:**
+
+### Bug #3:  <NAME>
+**Location:** `Filename`, line xxx
+
+**The Problem:**
+```Describe
+```
+
+**The Fix:**
+```Solution
+```
+
+**Why it matters:** 
+
+
+**How did you find this:**
+
+### Bug #4:  <NAME>
+**Location:** `Filename`, line xxx
+
+**The Problem:**
+```Describe
+```
+
+**The Fix:**
+```Solution
+```
+
+**Why it matters:** 
+
+
+**How did you find this:**
+
+
