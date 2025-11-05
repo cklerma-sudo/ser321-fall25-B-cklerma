@@ -56,20 +56,20 @@ The client expects the result to be labelled as result in the response and when 
 **How did you find this:**
 Just used a basic two inputs "race" and "car" to see that the client program has an error and seeing the format is incorect.
 
-### Bug #4:  <NAME>
-**Location:** `Filename`, line xxx
+### Bug #4:  Result incorrectly Handled
+**Location:** `SockClient`, line 94
 
 **The Problem:**
-```Describe
-```
+Result in server response was not handled correctly by client so thus it caused a crash
 
 **The Fix:**
-```Solution
-```
+Add an else if statement to handle the server response
 
 **Why it matters:** 
+The client need to process the request from how the server is documented to send it
 
 
 **How did you find this:**
+Just used a basic two inputs "race" and "car" to see that the client program has an error and seeing that the error was an integer expected but a string was given.
 
 
