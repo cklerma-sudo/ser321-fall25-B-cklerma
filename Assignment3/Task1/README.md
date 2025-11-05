@@ -125,13 +125,56 @@ Error response:
 
 
 ### AddMany: ###
-**TODO - Part A:** You need to document this protocol by:
-1. Reading the server implementation in SockServer.java
-2. Testing the service with various inputs (write Unit Tests and/or add the service to the client to test)
-3. Write the complete protocol specification here (follow the format of echo and add above)
-4. Document ALL possible error cases
 
-TODO: YOUR PROTOCOL GOES HERE
+Request:
+
+    {
+        "type" : "addmany",
+        "nums" : [<String>, ...], -- array of integers -- String needs to be an int number e.g. "3"
+    }
+
+General response
+
+    {
+        "type" : "addmany", -- echoes the initial request
+        "ok" : <bool>, -- true or false depending on request
+        "result" : <int>,  -- result if ok true
+        "message" : <String>,  -- error message if ok false
+    }
+
+Success response:
+
+    {
+        "type" : "addmany",
+        "ok" : true,
+        "result" : <int> -- the result of addmany
+    }
+
+Error response:
+
+    {
+        "type" : "addmany",
+        "ok" : false,
+        "message" : <String> - error message about what went wrong
+    }
+  Error Request Cases:
+    
+    {
+      "type": <String> -- the request string is giberish
+      ...
+    }
+
+    {
+      "type" : "addmany",
+      "nums" : [] -- The array is empty or null
+    }
+
+    {
+        "type" : "addmany",
+        "nums" : [<String>, ...], -- String is not an integer e.g. ["one", "3.2", "", etc]
+    }
+
+    
 
 ### StringConcatenation: ###
 This service will concatenate two strings provided by the client. The client will send a request to the server with two strings to be concatenated. 
