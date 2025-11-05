@@ -13,12 +13,12 @@ The Correct Protocolis in the README.md
 **Location:** `SockClient`, line 71
 
 **The Problem:**
-```"string_1" was the key used in the json object for the first string when the server expected to be "string1"
-```
+"string_1" was the key used in the json object for the first string when the server expected to be "string1"
+
 
 **The Fix:**
-```Change the key in the client to "string1"
-```
+Change the key in the client to "string1"
+
 
 **Why it matters:** 
 This is so that the server can actually find what the first string is.
