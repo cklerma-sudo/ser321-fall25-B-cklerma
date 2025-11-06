@@ -95,6 +95,8 @@ public class SockServer {
           } else if (req.getString("type").equals("stats")) {
             // Mystery service - discover the protocol
             res = mysteryservice.MysteryService.processRequest(req);
+          } else if (req.getString("type").equals("temperature")) {
+            res = temperature(req);
           } else {
             res = wrongType(req);
           }
@@ -183,7 +185,7 @@ public class SockServer {
     String str1 = req.getString("string1");
     String str2 = req.getString("string2");
     res.put("result", str1 + str2);
-    res.put("type", "stringconcatenation")
+    res.put("type", "stringconcatenation");
     return res;
   }
 
@@ -218,6 +220,85 @@ public class SockServer {
     res.put("result", result);
     return res;
   }
+
+  static JSONObject temperature(JSONObject req){
+    System.out.println("temperature request: " + req.toString());
+    JSONObject resValue = testField(req, "value");
+    if (!resValue.getBoolean("ok")) {
+      return resValue;
+    }
+    JSONObject resFrom = testField(req, "from");
+    if (!resFrom.getBoolean("ok")) {
+      return resFrom;
+    }
+    JSONObject resTo = testField(req, "to");
+    if (!resTo.getBoolean("ok")) {
+      return resTo;
+    }
+    JSONObject res = new JSONObject();
+
+    String from = req.getString("from");
+    String to = req.getString("to");
+    double value = 0;
+    try{
+      value = req.getDouble("value");
+    } catch (org.json.JSONException e) {
+      res.put("ok", false);
+      res.put("message", "Values in temperature need to be doubles");
+      return res;
+    }
+    if (!(from.equals("fahrenheit") || from.equals("celsius") || from.equals("kelvin"))){
+      res.put("ok", false);
+      res.put("message", "Field 'from' must be one of: fahrenheit, celsius, kelvin");
+      return res;
+    }
+    if (!(to.equals("fahrenheit") || to.equals("celsius") || to.equals("kelvin"))){
+      res.put("ok", false);
+      res.put("message", "Field 'to' must be one of: fahrenheit, celsius, kelvin");
+      return res;
+    }
+
+    if ((from.equals("fahrenheit") && value < -459.67) || (from.equals("celsius") && value < -273.15) || (from.equals("kelvin") && value < 0)){
+      res.put("ok", false);
+      res.put("message", "Temperature cannot be below absolute zero (-273.15 C / -459.67 F / 0 K)");
+      return res;
+    }
+
+
+    double result = 0;
+    String formula = "";
+    if (from.equals("celsius") && to.equals("fahrenheit")){
+      result = value * (9.0/5.0) + 32;
+      formula = String.format("%.2f C * 9/5 + 32 = %.2f F",value, result);
+    }
+    else if (from.equals("fahrenheit") && to.equals("celsius")){
+      result = (value - 32) * (5.0/9.0);
+      formula = String.format("(%.2f F - 32) * 5/9 = %.2f C",value, result);
+    }
+    else if (from.equals("kelvin") && to.equals("celsius")){
+      result = value - 273.15;
+      formula = String.format("%.2f K - 273.15 = %.2f C",value, result);
+    }
+    else if (from.equals("celsius") && to.equals("kelvin")){
+      result = value + 273.15;
+      formula = String.format("%.2f C + 273.15 = %.2f K",value, result);
+    }
+    else if (from.equals("fahrenheit") && to.equals("kelvin")){
+      result = ((9.0/5.0) * (value -273.15)) + 32;
+      formula = String.format("(9/5 * (%.2f F - 273.15)) + 32 = %.2f K",value, result);
+    }
+    else if (from.equals("kelvin") && to.equals("fahrenheit")){
+      result = ((5.0/9.0) * (value - 32)) + 273.15;
+      formula = String.format("(5/9 * (%.2f K - 32)) + 273.15 = %.2f F",value, result);
+    }
+    result = Math.round(result * 100.0) / 100.0;
+    res.put("ok", true);
+    res.put("type", "temperature");
+    res.put("result", result);
+    res.put("formula", formula);
+    return res;
+  }
+
 
 
 //  SOME GENERAL ERROR MESSAGES
