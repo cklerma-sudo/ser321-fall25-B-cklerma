@@ -35,7 +35,7 @@ class SockClient {
       System.out.println("Client connected to server.");
       boolean requesting = true;
       while (requesting) {
-        System.out.println("What would you like to do: 1 - echo, 2 - add, 3 - string concatenation (0 to quit)");
+        System.out.println("What would you like to do: 1 - echo, 2 - add, 3 - string concatenation, 4 - temperature conversion (0 to quit)");
         Scanner scanner = new Scanner(System.in);
         int choice = Integer.parseInt(scanner.nextLine());
         // You can assume the user put in a correct input, you do not need to handle errors here
@@ -71,7 +71,18 @@ class SockClient {
             json.put("string1", str1);
             json.put("string2", str2);
             break;
-            // TODO: implement temperature (4) or cart services (5)
+          case 4:
+            System.out.println("Choose temperature conversion, First enter the temperature value to convert (must be a number): ");
+            String value = scanner.nextLine();
+            System.out.println("Now what is the type of current temperature: fahrenheit, celsius, or kelvin: ");
+            String from = scanner.nextLine();
+            System.out.println("Now what are you converting to: fahrenheit, celsius, or kelvin: ");
+            String to = scanner.nextLine();
+            json.put("type", "temperature");
+            json.put("value", value);
+            json.put("from", from);
+            json.put("to", to);
+            break;
         }
         if(!requesting) {
           continue;
@@ -91,8 +102,8 @@ class SockClient {
         if (res.getBoolean("ok")){
           if (res.getString("type").equals("echo")) {
             System.out.println(res.getString("echo"));
-          } 
-           else if (res.getString("type").equals("stringconcatenation")){
+          }
+          else if (res.getString("type").equals("stringconcatenation")){
             System.out.println(res.getString("result"));
           }
           else {
