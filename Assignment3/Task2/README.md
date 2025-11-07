@@ -315,7 +315,7 @@ The idea of the protocols is to have the user send data that is stored in the se
 
 ## Error Handling Strategy
 
-[Explain your approach to error handling:] I plan on guessing what faulty inputs can be used and being prepared to handle those inputs. I will use equivalence partitioning on test cases to find where the code is error prone. Then my code will be built not to crash and alert the user of what went wrong.
+[Explain your approach to error handling:] I plan on guessing what faulty inputs can be used and being prepared to handle those inputs. Then my code will be built not to crash and alert the user of what went wrong.
 
 **Server-side validation:**
 - [What validations does your server perform?]
@@ -325,28 +325,27 @@ The idea of the protocols is to have the user send data that is stored in the se
   I will either set to a default value if possible, or continue to prompt the user until something is entered.
 
 - [How do you handle invalid data types?]
-  <Your answer>
+  Avoid a crash and alert the user of the mistake then continue to prompt them.
 
 - [How do you handle game state errors?]
-  <Your answer>
-
+  Avoid a crash, alert the user that something went wrong, and revert to the last stable state. Worse case senario, the game restarts.
 ---
 
 ## Robustness
 
-[Explain how you ensured robustness:]
+[Explain how you ensured robustness:] I will use equivalence partitioning on test cases to find where the code is error prone. This rigorous testing will ensure that the code works in the vast majority of cirmcumstances.
 
 **Server robustness:**
 - [How does server handle invalid input without crashing?]
-- <Your answer>
+- The server will be designed to expect faulty input and navigate around it either through try and catch blocks or if statements.
 
 
 **Client robustness:**
 - [How does client handle unexpected responses?]
-- <Your answer>
+- There will be a default error that the client can always revert to if the erronous response is not expected. Then the client can attempt to reconnect if needed.
 
 - [What happens if server is unavailable?]
-- <Your answer>
+- The user will be notfied and the client will continue to attempt a connection until it succeeds or the user elects to quit trying.
 
 ---
 
