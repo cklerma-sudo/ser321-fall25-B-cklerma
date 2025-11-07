@@ -1,7 +1,7 @@
 # Assignment 3 Task 2: Hangman Game Protocol
 
-**Author:** [Your Name]
-**Date:** [Date]
+**Author:** Christopher Lerma
+**Date:** 11/6
 
 ---
 
@@ -68,7 +68,7 @@ The video demonstrates:
 ## Protocol Specification
 
 ### Overview
-[Provide a brief overview of your protocol design - what patterns did you use, how does communication work, etc.]
+Sets the players name and stores it in the server to use for leaderboard purposes.
 
 ---
 
