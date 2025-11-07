@@ -35,7 +35,7 @@ class SockClient {
       System.out.println("Client connected to server.");
       boolean requesting = true;
       while (requesting) {
-        System.out.println("What would you like to do: 1 - echo, 2 - add, 3 - string concatenation, 4 - temperature conversion (0 to quit)");
+        System.out.println("What would you like to do: 1 - echo, 2 - add, 3 - string concatenation, 4 - temperature conversion, 5 - mystery/stats (0 to quit)");
         Scanner scanner = new Scanner(System.in);
         int choice = Integer.parseInt(scanner.nextLine());
         // You can assume the user put in a correct input, you do not need to handle errors here
@@ -82,6 +82,30 @@ class SockClient {
             json.put("value", value);
             json.put("from", from);
             json.put("to", to);
+            break;
+          case 5:
+            System.out.println("Choose stats/mystery, Enter Number Collection one by one (Leave blank and press enter when done): ");
+            json.put("type", "stats");
+            String i = scanner.nextLine();
+            JSONArray numbers = new JSONArray();
+            while (!i.trim().isEmpty()){
+             numbers.put(i);
+             i = scanner.nextLine();
+            }
+            System.out.println("What Operation? (mean, sum, min, max, greaterThan, contains, help)");
+            String operation = scanner.nextLine();
+            json.put("operation", operation);
+            json.put("numbers", numbers);
+            if (operation.equals("greaterThan")) {
+              System.out.println("Enter threshold: ");
+              String threshold = scanner.nextLine();
+              json.put("threshold", threshold);
+            }
+            if (operation.equals("contains")){
+              System.out.println("Enter value to find: ");
+              String val = scanner.nextLine();
+              json.put("value", val);
+            }
             break;
         }
         if(!requesting) {
