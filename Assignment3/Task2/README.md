@@ -68,7 +68,7 @@ The video demonstrates:
 ## Protocol Specification
 
 ### Overview
-Sets the players name and stores it in the server to use for leaderboard purposes.
+The idea of the protocols is to have the user send data that is stored in the server and then the server sends the updated game state back to the client.
 
 ---
 
@@ -106,34 +106,223 @@ Sets the players name and stores it in the server to use for leaderboard purpose
 **Request:**
 ```json
 {
-    [Your protocol design here]
+    "type": "start",
+    "difficulty": "<String>" -- selection from easy, medium, or hard
 }
 ```
 
 **Success Response:**
 ```json
 {
-    [Your protocol design here]
+    "type": "start",
+    "difficulty": "<String>", -- echoes the user selection easy, medium, or hard
+    "ok": true,
+    "hangStage": "STAGE0", -- sets the current stage of hangman
+    "word": "<String>" --Shows the state of the word, '_' will show blank spaces
 }
 ```
 
 **Error Response(s):**
 ```json
 {
-    [Document all possible errors]
+    "ok": false,
+    "message": "Difficulty must be easy, medium, or hard"
+}
+```
+---
+
+### 3. View Leaderboard
+
+**Request:**
+```json
+{
+    "type": "leaderboard",
 }
 ```
 
+**Success Response:**
+```json
+{
+    "type": "leaderboard",
+    "ok": true,
+    "leaderboard": ["<String>", "..."] --Array containing names of players on the leaderboard and their score formatted like ["hannah 55", "bob 35"]
+}
+```
+
+---
+
+### 4. Quit
+
+**Request:**
+```json
+{
+    "type": "quit"
+}
+```
+
+**Success Response:**
+```json
+{
+    "type": "quit",
+    "ok": true,
+    "message": "Thanks for playing!"
+}
+```
+---
+
+### 5. Guess a Letter
+
+**Request:**
+```json
+{
+    "type": "guessLetter",
+    "letter": "<String>" -- The letter that the user guesses
+}
+```
+
+**Success Response:**
+```json
+{
+    "type": "guessLetter",
+    "ok": true,
+    "hangStage": "STAGE<Integer>", -- Shows the stage of hangman based on guess
+    "word": "<String>", --Shows the state of the word, '_' will show blank spaces
+    "win":<Boolean>, -- Tells if the player has won
+    "loss":<Boolean>, --Tells if player has loss
+    "guess": "<String>" --Tells if the guess was correct or incorrect
+    "score": "<Integer>" --Tells the player what is their current score
+}
+```
+
+**Error Responses:**
+```json
+{
+    "ok": false,
+    "message": "Guess must be a letter such as 'a'"
+}
+```
+```json
+{
+    "ok": false,
+    "message": "Guess cannot be empty"
+}
+```
+---
+
+### 6. Guess a Word
+
+**Request:**
+```json
+{
+    "type": "guessWord",
+    "letter": "<String>" -- The word that the user guesses
+}
+```
+
+**Success Response:**
+```json
+{
+    "type": "guessWord",
+    "ok": true,
+    "hangStage": "STAGE<Integer>", -- Shows the stage of hangman based on guess
+    "word": "<String>", --Shows the state of the word, '_' will show blank spaces
+    "win":<Boolean>, -- Tells if the player has won
+    "loss":<Boolean>, --Tells if player has loss
+    "guess": "<String>" --Tells if the guess was correct or incorrect
+    "score": "<Integer>" --Tells the player what is their current score
+}
+```
+
+**Error Responses:**
+```json
+{
+    "ok": false,
+    "message": "Guess must be a word with only letters such as 'rotten'"
+}
+```
+```json
+{
+    "ok": false,
+    "message": "Guess cannot be empty"
+}
+```
+```json
+{
+    "ok": false,
+    "message": "Guess was not the correct amount of letters"
+}
+```
+---
+### 7. Show Game State
+
+**Request:**
+```json
+{
+    "type": "state"
+}
+```
+
+**Success Response:**
+```json
+{
+    "type": "state",
+    "ok": true,
+    "hangStage": "STAGE<Integer>", -- Shows the stage of hangman based on guess
+    "word": "<String>", --Shows the state of the word, '_' will show blank spaces
+    "score": "<Integer>", --Tells the player what is their current score
+    "guesses": "<String>", --Shows the guesses remaining as a fraction
+    "lettersCorrect": "<Integer>" --Shows the amount of letters correctly guessed
+}
+```
+---
+### 8. Show Letters Guessed
+
+**Request:**
+```json
+{
+    "type": "letters"
+}
+```
+
+**Success Response:**
+```json
+{
+    "type": "letters",
+    "ok": true,
+    "lettersGuessed": ["<String>, "..."] --Shows the letters that are guessed
+    "total": "<String>" --Shows the total
+}
+```
+---
+### 9. Return the Menu
+
+**Request:**
+```json
+{
+    "type": "return"
+}
+```
+
+**Success Response:**
+```json
+{
+    "type": "return",
+    "ok": true,
+    "message": "Success, going back to main menu"
+}
+```
+---
+
 ## Error Handling Strategy
 
-[Explain your approach to error handling:]
+[Explain your approach to error handling:] I plan on guessing what faulty inputs can be used and being prepared to handle those inputs. I will use equivalence partitioning on test cases to find where the code is error prone. Then my code will be built not to crash and alert the user of what went wrong.
 
 **Server-side validation:**
 - [What validations does your server perform?]
-  <Your answer>
+  It will validate inputs from the user such as their name and the letters they guess and then ensure that they are valid.
 
 - [How do you handle missing fields?]
-  <Your answer>
+  I will either set to a default value if possible, or continue to prompt the user until something is entered.
 
 - [How do you handle invalid data types?]
   <Your answer>
