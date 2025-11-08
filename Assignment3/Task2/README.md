@@ -118,7 +118,8 @@ The idea of the protocols is to have the user send data that is stored in the se
     "difficulty": "<String>", -- echoes the user selection easy, medium, or hard
     "ok": true,
     "hangStage": <String>, -- sends the current stage of hangman
-    "word": "<String>" --Shows the state of the word, '_' will show blank spaces
+    "word": "<String>", --Shows the state of the word, '_' will show blank spaces
+    "length": <Integer> -- Shows length of word
 }
 ```
 
@@ -205,6 +206,12 @@ The idea of the protocols is to have the user send data that is stored in the se
 {
     "ok": false,
     "message": "Guess cannot be empty"
+}
+```
+```json
+{
+    "ok": false,
+    "message": "You already guessed this letter"
 }
 ```
 ---
