@@ -297,7 +297,7 @@ The idea of the protocols is to have the user send data that is stored in the se
     "type": "letters",
     "ok": true,
     "lettersGuessed": ["<String>, "..."] --Shows the letters that are guessed
-    "total": "<String>" --Shows the total
+    "total": "<Number>" --Shows the total
 }
 ```
 ---
