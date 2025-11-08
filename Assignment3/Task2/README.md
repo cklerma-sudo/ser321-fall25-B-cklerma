@@ -117,7 +117,7 @@ The idea of the protocols is to have the user send data that is stored in the se
     "type": "start",
     "difficulty": "<String>", -- echoes the user selection easy, medium, or hard
     "ok": true,
-    "hangStage": "STAGE0", -- sets the current stage of hangman
+    "hangStage": <String>, -- sends the current stage of hangman
     "word": "<String>" --Shows the state of the word, '_' will show blank spaces
 }
 ```
@@ -185,7 +185,7 @@ The idea of the protocols is to have the user send data that is stored in the se
 {
     "type": "guessLetter",
     "ok": true,
-    "hangStage": "STAGE<Integer>", -- Shows the stage of hangman based on guess
+    "hangStage": <String>, -- Sends the stage of hangman based on guess
     "word": "<String>", --Shows the state of the word, '_' will show blank spaces
     "win":<Boolean>, -- Tells if the player has won
     "loss":<Boolean>, --Tells if player has loss
