@@ -146,7 +146,8 @@ The idea of the protocols is to have the user send data that is stored in the se
 {
     "type": "leaderboard",
     "ok": true,
-    "leaderboard": ["<String>", "..."] --Array containing names of players on the leaderboard and their score formatted like ["hannah 55", "bob 35"]
+    "leaderboard": ["<String>", "..."], --Array containing names of players on the leaderboard, their score, and their difficulty
+    "count": <Integer> --Number that shows how many players are on the leaderboard
 }
 ```
 
