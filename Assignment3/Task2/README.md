@@ -373,6 +373,7 @@ The idea of the protocols is to have the user send data that is stored in the se
 
 1. There currently is not way to see where the scoring system comes from within the client
 2. It does not count word guess towards letters guessed
+3. When ran on a windows command prompt, not all the symbols used are recognized and appear as question marks.
 
 ---
 
