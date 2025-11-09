@@ -361,9 +361,9 @@ The idea of the protocols is to have the user send data that is stored in the se
 
 [List any assumptions you made about the protocol or game rules]
 
-1. [Assumption 1]
-2. [Assumption 2]
-3. [etc.]
+1. Users will be using the client that I coded to connect to the game.
+2. Request did not need to be printed on the server side, just the word when playing a game
+
 
 ---
 
@@ -371,8 +371,8 @@ The idea of the protocols is to have the user send data that is stored in the se
 
 [List any known bugs or limitations]
 
-1. [Issue 1]
-2. [Issue 2]
+1. There currently is not way to see where the scoring system comes from within the client
+2. It does not count word guess towards letters guessed
 
 ---
 
