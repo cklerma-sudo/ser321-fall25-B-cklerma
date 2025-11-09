@@ -46,20 +46,20 @@ The video demonstrates:
 
 ### Core Features (Required)
 - [x] Set Player Name (provided as example)
-- [ ] Start New Game
-- [ ] Guess Letter
-- [ ] Game State
-- [ ] Win/Lose Detection
+- [x] Start New Game
+- [x] Guess Letter
+- [x] Game State
+- [x] Win/Lose Detection
 - [x] Graceful Quit
 
 ### Medium Features (Enhanced Gameplay)
-- [ ] Difficulty Selection
-- [ ] Word Guessing
-- [ ] Guessed Letters Command
+- [x] Difficulty Selection
+- [x] Word Guessing
+- [x] Guessed Letters Command
 
 ### Advanced Features (Competition)
-- [ ] Scoring System
-- [ ] Leaderboard
+- [x] Scoring System
+- [x] Leaderboard
 
 **Note:** Mark [x] for completed features, [ ] for not implemented.
 
