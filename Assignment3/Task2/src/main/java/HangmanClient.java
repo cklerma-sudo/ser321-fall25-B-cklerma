@@ -1,4 +1,5 @@
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.*;
@@ -148,6 +149,7 @@ public class HangmanClient {
             return true;
         } else if (input.equals("0")) {
             quit();
+            gameInProgress = false;
             return false;
         }
 
@@ -183,10 +185,17 @@ public class HangmanClient {
         System.out.print("\nAre you sure you want to give up? (yes/no): ");
         String confirm = scanner.nextLine().trim().toLowerCase();
         if (confirm.equals("yes") || confirm.equals("y")) {
-            // TODO: Send request to server to properly end the game
-            gameInProgress = false;
-            System.out.println("\nYou gave up! Returning to main menu...\n");
-            System.out.println("[TODO: This should notify the server to end the game properly]");
+            JSONObject req = new JSONObject();
+            req.put("type", "return");
+            JSONObject res = sendRequest(req);
+            if (res != null && res.getBoolean("ok")) {
+                gameInProgress = false;
+                System.out.println(res.getString("message"));
+                System.out.println("\nYou gave up! Returning to main menu...\n");
+            }
+            else{
+                System.out.println("Unexpected error, please try again.");
+            }
         } else {
             System.out.println("\nContinuing game...");
         }
@@ -220,9 +229,6 @@ public class HangmanClient {
         }
     }
 
-    /**
-     * TODO: Implement start game
-    **/
     static void startGame() {
         // the difficulty is part of the middle part you can skip that or comment it while you do the core if you like
         System.out.println("\nSelect difficulty:");
@@ -247,88 +253,180 @@ public class HangmanClient {
                 System.out.println("Invalid choice, defaulting to easy");
         }
 
-        // TODO: Create request with your protocol
-        // TODO: Send request and handle response and all that is needed
-
-        System.out.println("\n[TODO: Implement start game - send start request with difficulty: " + difficulty + "]");
+        JSONObject req = new JSONObject();
+        req.put("difficulty", difficulty);
+        req.put("type", "start");
+        JSONObject res = sendRequest(req);
+        if (res != null && res.getBoolean("ok")) {
+            System.out.println("New game started! Difficulty: " + res.getString("difficulty"));
+            System.out.println("Word Length: " + res.getInt("length"));
+            System.out.println("Max wrong guesses: 9");
+            System.out.println(res.getString("hangStage"));
+            System.out.println("Word:" + res.getString("word"));
+            gameInProgress = true;
+        }
+        else if (res != null) {
+            System.out.println("Error starting game:" + res.getString("message"));
+        }
+        else {
+            System.out.println("Error starting game...");
+        }
     }
 
-    /**
-     * TODO: Implement letter guess
-     */
     static void guessLetter(String letter) {
         if (!gameInProgress) {
             System.out.println("✗ No game in progress. Start a new game first.");
             return;
         }
+        JSONObject req = new JSONObject();
+        req.put("type", "guessLetter");
+        req.put("letter", letter);
+        JSONObject res = sendRequest(req);
+        if (res != null && res.getBoolean("ok")) {
+            if (!(res.getBoolean("won") || res.getBoolean("loss"))) {
+                System.out.println("Score: " + res.getInt("score"));
+                System.out.println(res.getString("hangStage"));
+                System.out.println("Word: " + res.getString("word"));
+            }
+            else if (res.getBoolean("loss")) {
+                gameInProgress = false;
+                System.out.println("Score: " + res.getInt("score"));
+                System.out.println(res.getString("hangStage"));
+                System.out.println("Word: " + res.getString("word"));
+                System.out.println("Game Over! The word was: " + res.getString("finalWord"));
+                System.out.println("Final Score: " + res.getInt("score"));
+            }
+            else if (res.getBoolean("won")) {
+                gameInProgress = false;
+                System.out.println("Score: " + res.getInt("score"));
+                System.out.println(res.getString("hangStage"));
+                System.out.println("Word: " + res.getString("word"));
+                System.out.println("You won!");
+                System.out.println("Final Score: " + res.getInt("score"));
+            }
 
-        // TODO: Create request with your protocol
-        // TODO: Send request and handle response
-        // ...
 
-        System.out.println("\n[TODO: Implement letter guess for: " + letter + "]");
+        }
+        else if (res != null) {
+            System.out.println(res.getString("message"));
+        }
+        else {
+            System.out.println("Unexpected error, please try again.");
+        }
     }
 
-    /**
-     * TODO: Implement word guess
-     */
     static void guessWord(String word) {
         if (!gameInProgress) {
             System.out.println("✗ No game in progress. Start a new game first.");
             return;
         }
+        JSONObject req = new JSONObject();
+        req.put("type", "guessWord");
+        req.put("letter", word);
+        JSONObject res = sendRequest(req);
+        if (res != null && res.getBoolean("ok")) {
+            if (!(res.getBoolean("won") || res.getBoolean("loss"))) {
+                System.out.println("Score: " + res.getInt("score"));
+                System.out.println(res.getString("hangStage"));
+                System.out.println("Word: " + res.getString("word"));
+            }
+            else if (res.getBoolean("loss")) {
+                gameInProgress = false;
+                System.out.println("Score: " + res.getInt("score"));
+                System.out.println(res.getString("hangStage"));
+                System.out.println("Word: " + res.getString("word"));
+                System.out.println("Game Over! The word was: " + res.getString("finalWord"));
+                System.out.println("Final Score: " + res.getInt("score"));
+            }
+            else if (res.getBoolean("won")) {
+                gameInProgress = false;
+                System.out.println("Score: " + res.getInt("score"));
+                System.out.println(res.getString("hangStage"));
+                System.out.println("Word: " + res.getString("word"));
+                System.out.println("You won!");
+                System.out.println("Final Score: " + res.getInt("score"));
+            }
 
-        // TODO: Create request with your protocol
-        // TODO: Send request and handle response
-        // TODO: ...
 
-        System.out.println("\n[TODO: Implement word guess for: " + word + "]");
+        }
+        else if (res != null) {
+            System.out.println(res.getString("message"));
+        }
+        else {
+            System.out.println("Unexpected error, please try again.");
+        }
+
     }
 
-    /**
-     * TODO: Implement get game state
-     */
     static void getState() {
         if (!gameInProgress) {
             System.out.println("✗ No game in progress. Start a new game first.");
             return;
         }
-
-        // TODO: Create request with your protocol
-        // TODO: Send request and handle response
-        // TODO: ...
-
-        System.out.println("\n[TODO: Implement get state]");
+        JSONObject req = new JSONObject();
+        req.put("type", "state");
+        JSONObject res = sendRequest(req);
+        if (res != null && res.getBoolean("ok")) {
+            System.out.println("=== GAME STATE ===");
+            System.out.println(res.getString("hangStage"));
+            System.out.println("Word: " + res.getString("word"));
+            System.out.println("Wrong Guesses: " + res.getString("guesses"));
+            System.out.println("Score: " + res.getInt("score"));
+            System.out.println("Letters guessed: " + res.getInt("lettersAmount"));
+        }
+        else{
+            System.out.println("Unexpected error, please try again.");
+        }
     }
 
-    /**
-     * TODO: Implement get guessed letters
-     */
     static void getLetters() {
         if (!gameInProgress) {
             System.out.println("✗ No game in progress. Start a new game first.");
             return;
         }
+        JSONObject req = new JSONObject();
+        req.put("type", "letters");
+        JSONObject res = sendRequest(req);
+        if (res != null && res.getBoolean("ok")) {
+            System.out.println("=== Guessed Letters ===");
+            String letters = " ";
+            JSONArray lettersGuessed = res.getJSONArray("lettersGuessed");
+            for (int i = 0; i < res.getInt("total"); i++){
+                letters += lettersGuessed.getString(i) + ", ";
+            }
+            System.out.println("Letters:" + letters);
+            System.out.println("Total: " + res.getInt("total"));
 
-        // TODO: Create request with your protocol
-        // TODO: Send request and handle response
-        // TODO: ...
-
-        System.out.println("\n[TODO: Implement get guessed letters]");
+        }
+        else {
+            System.out.println("Unexpected error, please try again.");
+        }
     }
 
-    /**
-     * TODO: Implement get leaderboard
-     * This should:
-     * - Request leaderboard from server
-     * - Display it in a nice formatted table
-     */
     static void getLeaderboard() {
-        // TODO: Create request with your protocol
-        // TODO: Send request and handle response
-        // TODO: ...
-
-        System.out.println("\n[TODO: Implement get leaderboard]");
+        JSONObject req = new JSONObject();
+        req.put("type", "leaderboard");
+        JSONObject res = sendRequest(req);
+        if (res != null && res.getBoolean("ok")) {
+            System.out.println("=========== Leaderboard (Top 10) ===========");
+            System.out.println("Rank  Name                  Score Difficulty");
+            System.out.println("--------------------------------------------");
+            if (res.getInt("count") == 0) System.out.println("No one is on the leaderboard yet!");
+            else {
+                JSONArray leaderboard = res.getJSONArray("leaderboard");
+                for (int i = 0; i < leaderboard.length(); i++) {
+                    JSONObject obj = leaderboard.getJSONObject(i);
+                    int rank = obj.getInt("rank");
+                    int score = obj.getInt("score");
+                    String difficulty = obj.getString("difficulty");
+                    String name = obj.getString("name");
+                    System.out.printf("%-5d %-21s %-5d %-10s\n", rank, name, score, difficulty);
+                }
+            }
+        }
+        else {
+            System.out.println("Unexpected error, please try again.");
+        }
     }
 
     /**
@@ -340,7 +438,10 @@ public class HangmanClient {
 
         JSONObject response = sendRequest(request);
         if (response != null && response.getBoolean("ok")) {
-            System.out.println("\n" + response.getString("message"));
+            try{System.out.println("\n" + response.getString("message"));}
+            catch (JSONException e) {
+                System.out.println("Goodbye");
+            }
             System.out.println("Thanks for playing!");
         }
         return false; // Stop the main loop
