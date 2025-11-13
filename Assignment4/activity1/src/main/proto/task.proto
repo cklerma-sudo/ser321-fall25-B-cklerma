@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "taskone.proto";
+
+/**
+ * Task Management Protocol - Protocol Buffers Version
+ *
+ * The server currently uses JSON protocol. You need to design
+ * a Protobuf version that supports the same operations:
+ * - add: Add a new task
+ * - list: List tasks with filter
+ * - complete: Mark task as completed
+ * - assign: Assign task to someone
+ * - quit: Disconnect from server
+ *
+ * Study the JSON protocol the README.md, Server.java and Client.java to understand
+ * what fields are needed for each request and response.
+ */
+
+// ========== REQUEST MESSAGES ==========
+
+/**
+ * Main request message sent from client to server.
+ *
+ * TODO: Complete this message definition.
+ * Hint: Look at how Client.java builds JSON requests and at the README.
+ */
+message Request {
+  enum RequestType {
+    UNKNOWN = 0;
+    ADD = 1;
+    LIST = 2;
+    COMPLETE = 3;
+    ASSIGN = 4;
+    QUIT = 5;
+  }
+
+  RequestType type = 1;
+
+  // TODO: Add fields needed for different request types
+}
+
+// ========== RESPONSE MESSAGES ==========
+
+/**
+ * Main response message sent from server to client.
+ *
+ * TODO: Complete this message definition.
+ * Hint: Look at how Server.java builds JSON responses and at the README.
+ */
+message Response {
+  enum ResponseType {
+    UNKNOWN = 0;
+    SUCCESS = 1;
+    ERROR = 2;
+  }
+
+  ResponseType type = 1;
+  bool ok = 2;
+
+  // TODO: Add fields for response data
+  // Hint: Different responses need different data:
+
+  // Add your fields here:
+
+}
+
+// ========== DATA MESSAGES ==========
+
+/**
+ * Represents a single task.
+ *
+ * TODO: Complete this message definition.
+ * Hint: Look at Task.java to see what fields a task has.
+ */
+message Task {
+  // TODO: Add all task fields
+
+  // Add your fields here:
+  int32 id = 1;
+  // ... add more fields
+}
+
+/**
+ * List of tasks (for LIST response).
+ *
+ * TODO: Complete this message definition if needed.
+ */
+message TaskList {
+  repeated Task tasks = 1;
+  int32 count = 2;
+}
