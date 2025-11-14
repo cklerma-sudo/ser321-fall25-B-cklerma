@@ -13,7 +13,7 @@ import org.json.JSONArray;
  * Performer class handles client requests using JSON protocol.
  * This version uses JSON for serialization.
  */
-public class ProtoPerformer {
+public class PerformerProto {
     private final Socket clientSocket;
     private final TaskList taskList;
     private BufferedReader in;
