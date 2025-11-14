@@ -23,8 +23,6 @@ option java_package = "taskone.proto";
 /**
  * Main request message sent from client to server.
  *
- * TODO: Complete this message definition.
- * Hint: Look at how Client.java builds JSON requests and at the README.
  */
 message Request {
   enum RequestType {
@@ -38,7 +36,13 @@ message Request {
 
   RequestType type = 1;
 
-  // TODO: Add fields needed for different request types
+  string description = 2; //For ADD
+  string priority = 3; //For ADD
+  string filter = 4; //For LIST
+  int32 id = 5; //For COMPLETE and ASSIGN
+  string assignee = 6; //For ASSIGN
+  
+  
 }
 
 // ========== RESPONSE MESSAGES ==========
@@ -46,8 +50,6 @@ message Request {
 /**
  * Main response message sent from server to client.
  *
- * TODO: Complete this message definition.
- * Hint: Look at how Server.java builds JSON responses and at the README.
  */
 message Response {
   enum ResponseType {
@@ -58,11 +60,26 @@ message Response {
 
   ResponseType type = 1;
   bool ok = 2;
+  Data data = 3;
 
-  // TODO: Add fields for response data
-  // Hint: Different responses need different data:
+}
 
-  // Add your fields here:
+message Data {
+  //ADD
+  int32 id = 1;
+  string description = 2;
+  string priority = 3;
+  string assignee = 4;
+  bool completed = 5;
+
+  //LIST
+  TaskList tasks = 6;
+
+  //COMPLETE, ASSIGN and QUIT
+  string success_message = 7;
+
+  //ERROR
+  string error_message =8;
 
 }
 
@@ -75,11 +92,11 @@ message Response {
  * Hint: Look at Task.java to see what fields a task has.
  */
 message Task {
-  // TODO: Add all task fields
-
-  // Add your fields here:
   int32 id = 1;
-  // ... add more fields
+  string description = 2;
+  string priority = 3;
+  string assignee = 4;
+  bool completed = 5;
 }
 
 /**
