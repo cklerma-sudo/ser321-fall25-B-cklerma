@@ -1,25 +1,31 @@
 package taskone;
 
-import java.io.BufferedReader;
+import taskone.proto.task.Request;
+import taskone.proto.task.Response;
+import taskone.proto.task.Response.ResponseType;
+import taskone.proto.task.Request.RequestType;
+import taskone.proto.task.Data;
+import taskone.proto.task.Task;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
-import org.json.JSONObject;
-import org.json.JSONArray;
 
 /**
- * Performer class handles client requests using JSON protocol.
- * This version uses JSON for serialization.
+ * Performer class handles client requests using protobuffer protocol.
+ * This version uses protobuffer for serialization.
  */
 public class PerformerProto {
     private final Socket clientSocket;
     private final TaskList taskList;
-    private BufferedReader in;
-    private PrintWriter out;
+    private InputStream in;
+    private OutputStream out;
 
-    public Performer(Socket clientSocket, TaskList taskList) {
+    public PerformerProto(Socket clientSocket, TaskList taskList) {
         this.clientSocket = clientSocket;
         this.taskList = taskList;
     }
@@ -30,26 +36,43 @@ public class PerformerProto {
      */
     public void doPerform() {
         try {
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            in = clientSocket.getInputStream();
+            out = clientSocket.getOutputStream();
 
             // Send welcome message
-            JSONObject welcome = JsonUtils.createSuccessResponse("connect", "Connected to Task Management Server");
-            out.println(welcome.toString());
+           Response welcome = Response.newBuilder()
+                    .setType(ResponseType.SUCCESS)
+                    .setOk(true)
+                    .setData(
+                            Data.newBuilder()
+                                .setMessage("Connected to Task Management Server")
+                                .build()
+                    )
+                    .build();
+            welcome.writeDelimitedTo(out);
+            out.flush();
 
             // Process requests
-            String request;
-            while ((request = in.readLine()) != null) {
-                JSONObject response = handleRequest(request);
-                out.println(response.toString());
+           while (true) {
+                Request request = Request.parseDelimitedFrom(in);
+                if (request == null) {
+                    break;
+                }
 
-                // If quit, break the loop
-                if (response.has("type") && response.getString("type").equals("quit")) {
+                Response response = handleRequest(request);
+                response.writeDelimitedTo(out);
+                out.flush();
+
+                if (request.getType() == RequestType.QUIT) {
                     break;
                 }
             }
         } catch (IOException e) {
             System.err.println("Error handling client: " + e.getMessage());
+        } finally {
+            try {
+                clientSocket.close();
+            } catch (IOException ignored) {}
         }
     }
 
@@ -58,28 +81,20 @@ public class PerformerProto {
      * @param requestStr JSON request string
      * @return JSON response object
      */
-    private JSONObject handleRequest(String requestStr) {
+    private Response handleRequest(Request request) {
         try {
-            JSONObject request = new JSONObject(requestStr);
-
-            // Validate request has type field
-            if (!request.has("type")) {
-                return JsonUtils.createErrorResponse("unknown", "Request missing 'type' field");
-            }
-
-            String type = request.getString("type");
-
+            RequestType type = request.getType();
             // Route to appropriate handler
             switch (type) {
-                case "add":
+                case "ADD":
                     return handleAdd(request);
-                case "list":
+                case "LIST":
                     return handleList(request);
-                case "complete":
+                case "COMPLETE":
                     return handleComplete(request);
-                case "assign":
+                case "ASSIGN":
                     return handleAssign(request);
-                case "quit":
+                case "QUIT":
                     return handleQuit();
                 default:
                     return JsonUtils.createErrorResponse(type, "Unknown request type: " + type);
