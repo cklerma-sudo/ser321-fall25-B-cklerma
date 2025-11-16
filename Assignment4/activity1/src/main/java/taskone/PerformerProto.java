@@ -70,7 +70,11 @@ public class PerformerProto {
             }
         } catch (IOException e) {
             System.err.println("Error handling client: " + e.getMessage());
-        } finally {
+        } 
+        catch (InvalidProtocolBufferException e) {
+            Response response = createErrorResponse("task", "Invalid input detected: " + e.getMessage());
+        }
+        finally {
             try {
                 clientSocket.close();
             } catch (IOException ignored) {}
@@ -178,74 +182,50 @@ public class PerformerProto {
     }
 
 
-    private JSONObject handleComplete(JSONObject request) {
+    private Response handleComplete(Request request) {
+        int id = request.getId();
+        
         // Validate required field
-        if (!request.has("id")) {
-            return JsonUtils.createErrorResponse("complete", "Missing 'id' field");
+        if (id == 0) {
+            return createErrorResponse("complete", "Missing 'id' field");
         }
 
-        // Get and validate ID
-        int id;
-        try {
-            id = request.getInt("id");
-        } catch (Exception e) {
-            return JsonUtils.createErrorResponse("complete", "Invalid 'id' value. Must be an integer");
-        }
 
         // Mark task as completed
         boolean success = taskList.completeTask(id);
 
         if (success) {
-            JSONObject data = new JSONObject();
-            data.put("message", "Task #" + id + " marked as completed");
-            return JsonUtils.createSuccessResponse("complete", data);
+            return createSuccessResponse("complete", "Task #" + id + " marked as completed");
         } else {
-            return JsonUtils.createErrorResponse("complete", "Task not found with ID: " + id);
+            return createErrorResponse("complete", "Task not found with ID: " + id);
         }
     }
 
 
-    private JSONObject handleAssign(JSONObject request) {
-        // Validate required fields
-        if (!request.has("id")) {
-            return JsonUtils.createErrorResponse("assign", "Missing 'id' field");
+    private Response handleAssign(Request request) {
+        int id = request.getId();
+        String assignee = request.getAssignee();
+        // Validate required field
+        if (id == 0) {
+            return createErrorResponse("complete", "Missing 'id' field");
         }
-        if (!request.has("assignee")) {
-            return JsonUtils.createErrorResponse("assign", "Missing 'assignee' field");
-        }
-
-        // Get and validate ID
-        int id;
-        try {
-            id = request.getInt("id");
-        } catch (Exception e) {
-            return JsonUtils.createErrorResponse("assign", "Invalid 'id' value. Must be an integer");
-        }
-
-        String assignee = request.getString("assignee");
-
-        // Validate assignee not empty
-        if (assignee.trim().isEmpty()) {
-            return JsonUtils.createErrorResponse("assign", "Assignee name cannot be empty");
+        if (assignee.isEmpty()) {
+            return createErrorResponse("assign", "Missing 'assignee' field");
         }
 
         // Assign task
         boolean success = taskList.assignTask(id, assignee);
 
         if (success) {
-            JSONObject data = new JSONObject();
-            data.put("message", "Task #" + id + " assigned to " + assignee);
-            return JsonUtils.createSuccessResponse("assign", data);
+            return createSuccessResponse("assign", "message", "Task #" + id + " assigned to " + assignee);
         } else {
-            return JsonUtils.createErrorResponse("assign", "Task not found with ID: " + id);
+            return createErrorResponse("assign", "Task not found with ID: " + id);
         }
     }
 
 
     private JSONObject handleQuit() {
-        JSONObject data = new JSONObject();
-        data.put("message", "Goodbye!");
-        return JsonUtils.createSuccessResponse("quit", data);
+        return JsonUtils.createSuccessResponse("quit", "Goodbye!");
     }
 
     private Response createErrorResponse(String type, String ErrorMessage) {
