@@ -71,9 +71,6 @@ public class PerformerProto {
         } catch (IOException e) {
             System.err.println("Error handling client: " + e.getMessage());
         } 
-        catch (InvalidProtocolBufferException e) {
-            Response response = createErrorResponse("task", "Invalid input detected: " + e.getMessage());
-        }
         finally {
             try {
                 clientSocket.close();
@@ -91,21 +88,21 @@ public class PerformerProto {
             RequestType type = request.getType();
             // Route to appropriate handler
             switch (type) {
-                case "ADD":
+                case ADD:
                     return handleAdd(request);
-                case "LIST":
+                case LIST:
                     return handleList(request);
-                case "COMPLETE":
+                case COMPLETE:
                     return handleComplete(request);
-                case "ASSIGN":
+                case ASSIGN:
                     return handleAssign(request);
-                case "QUIT":
+                case QUIT:
                     return handleQuit();
                 default:
-                    return JsonUtils.createErrorResponse(type, "Unknown request type: " + type);
+                    return createErrorResponse(type, "Unknown request type: " + type);
             }
         } catch (Exception e) {
-            return JsonUtils.createErrorResponse("error", "Invalid JSON or request format", e.getMessage());
+            return createErrorResponse("error", "Invalid request format: " + e.getMessage());
         }
     }
 
@@ -144,7 +141,7 @@ public class PerformerProto {
     private Response handleList(Request request) {
         // Get filter (defaults to "all")
         String filter = request.getFilter();
-        if (!filter.equals("pending") && !filter.equals("completed") filter = "all";
+        if (!filter.equals("pending") && !filter.equals("completed")) filter = "all";
         List<Task> tasks;
         switch (filter) {
             case "all":
@@ -160,14 +157,14 @@ public class PerformerProto {
                 return createErrorResponse("list", "Invalid filter value. Must be 'all', 'pending', or 'completed'");
         }
 
-       TaskList_proto listBuilder = TaskList_proto.newBuilder();
+       TaskList_proto.Builder listBuilder = TaskList_proto.newBuilder();
         for (Task task : tasks) {
             Task_proto task_proto = Task_proto.newBuilder()
                 .setId(task.getId())
                 .setPriority(task.getPriority())
                 .setDescription(task.getDescription())
                 .setAssignee(task.getAssignee())
-                .setCompleted(task.getCompleted())
+                .setCompleted(task.isCompleted())
                 .build();
             listBuilder.addTasks(task_proto);
         }
@@ -217,7 +214,7 @@ public class PerformerProto {
         boolean success = taskList.assignTask(id, assignee);
 
         if (success) {
-            return createSuccessResponse("assign", "message", "Task #" + id + " assigned to " + assignee);
+            return createSuccessResponse("assign", "Task #" + id + " assigned to " + assignee);
         } else {
             return createErrorResponse("assign", "Task not found with ID: " + id);
         }
@@ -225,7 +222,7 @@ public class PerformerProto {
 
 
     private JSONObject handleQuit() {
-        return JsonUtils.createSuccessResponse("quit", "Goodbye!");
+        return createSuccessResponse("quit", "Goodbye!");
     }
 
     private Response createErrorResponse(String type, String ErrorMessage) {
