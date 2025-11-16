@@ -5,7 +5,8 @@ import taskone.proto.task.Response;
 import taskone.proto.task.Response.ResponseType;
 import taskone.proto.task.Request.RequestType;
 import taskone.proto.task.Data;
-import taskone.proto.task.Task;
+import taskone.proto.task.Task_proto;
+import taskone.proto.task.TaskList_proto;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,7 +46,7 @@ public class PerformerProto {
                     .setOk(true)
                     .setData(
                             Data.newBuilder()
-                                .setMessage("Connected to Task Management Server")
+                                .setSuccessMessage("Connected to Task Management Server")
                                 .build()
                     )
                     .build();
@@ -104,40 +105,42 @@ public class PerformerProto {
         }
     }
 
-    private JSONObject handleAdd(JSONObject request) {
+    private Response handleAdd(Request request) {
+        String description = request.getDescription();
+        String priority = request.getPriority();
+        
         // Validate required fields
-        if (!request.has("description")) {
-            return JsonUtils.createErrorResponse("add", "Missing 'description' field");
+        if (description.isEmpty()) {
+            return createErrorResponse("add", "Missing 'description' field");
         }
-        if (!request.has("priority")) {
-            return JsonUtils.createErrorResponse("add", "Missing 'priority' field");
-        }
-
-        String description = request.getString("description");
-        String priority = request.getString("priority");
-
-        // Validate description not empty
-        if (description.trim().isEmpty()) {
-            return JsonUtils.createErrorResponse("add", "Description cannot be empty");
+        if (priority.isEmpty()) {
+            return createErrorResponse("add", "Missing 'priority' field");
         }
 
         // Validate priority value
         if (!priority.equals("low") && !priority.equals("medium") && !priority.equals("high")) {
-            return JsonUtils.createErrorResponse("add", "Invalid priority value. Must be 'low', 'medium', or 'high'");
+            return createErrorResponse("add", "Invalid priority value. Must be 'low', 'medium', or 'high'");
         }
 
         // Add task
         Task task = taskList.addTask(description, priority);
+        Data data = Data.newBuilder()
+            .setId(task.getId())
+            .setPriority(priority)
+            .setDescription(description)
+            .setAssignee(task.getAssignee())
+            .setCompleted(false)
+            .build();
 
         // Return success response with created task
-        return JsonUtils.createSuccessResponse("add", JsonUtils.taskToJson(task));
+        return createSuccessResponse("add", data);
     }
 
 
-    private JSONObject handleList(JSONObject request) {
+    private Response handleList(Request request) {
         // Get filter (defaults to "all")
-        String filter = request.optString("filter", "all");
-
+        String filter = request.getFilter();
+        if (!filter.equals("pending") && !filter.equals("completed") filter = "all";
         List<Task> tasks;
         switch (filter) {
             case "all":
@@ -150,21 +153,28 @@ public class PerformerProto {
                 tasks = taskList.getCompletedTasks();
                 break;
             default:
-                return JsonUtils.createErrorResponse("list", "Invalid filter value. Must be 'all', 'pending', or 'completed'");
+                return createErrorResponse("list", "Invalid filter value. Must be 'all', 'pending', or 'completed'");
         }
 
-        // Convert tasks to JSON array
-        JSONArray taskArray = new JSONArray();
+       TaskList_proto listBuilder = TaskList_proto.newBuilder();
         for (Task task : tasks) {
-            taskArray.put(JsonUtils.taskToJson(task));
+            Task_proto task_proto = Task_proto.newBuilder()
+                .setId(task.getId())
+                .setPriority(task.getPriority())
+                .setDescription(task.getDescription())
+                .setAssignee(task.getAssignee())
+                .setCompleted(task.getCompleted())
+                .build();
+            listBuilder.addTasks(task_proto);
         }
+        TaskList_proto list = listBuilder.setCount(tasks.size()).build();
 
         // Create response data
-        JSONObject data = new JSONObject();
-        data.put("tasks", taskArray);
-        data.put("count", tasks.size());
+        Data data = Data.newBuilder()
+            .setTasks(list)
+            .build();
 
-        return JsonUtils.createSuccessResponse("list", data);
+        return createSuccessResponse("list", data);
     }
 
 
@@ -236,5 +246,43 @@ public class PerformerProto {
         JSONObject data = new JSONObject();
         data.put("message", "Goodbye!");
         return JsonUtils.createSuccessResponse("quit", data);
+    }
+
+    private Response createErrorResponse(String type, String ErrorMessage) {
+        Response errorRes = Response.newBuilder()
+            .setType(ResponseType.ERROR)
+            .setOk(false)
+            .setReqType(type)
+            .setData(
+                Data.newBuilder()
+                .setErrorMessage(ErrorMessage)
+                .build()
+            )
+            .build();
+        return errorRes;
+    }
+
+     private Response createSuccessResponse(String type, String SuccessMessage) {
+        Response successRes = Response.newBuilder()
+            .setType(ResponseType.SUCCESS)
+            .setOk(true)
+            .setReqType(type)
+            .setData(
+                Data.newBuilder()
+                .setSuccessMessage(SuccessMessage)
+                .build()
+            )
+            .build();
+        return successRes;
+    }
+
+     private Response createSuccessResponse(String type, Data data) {
+        Response successRes = Response.newBuilder()
+            .setType(ResponseType.SUCCESS)
+            .setOk(true)
+            .setReqType(type)
+            .setData(data)
+            .build();
+        return successRes;
     }
 }
