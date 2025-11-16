@@ -1,12 +1,12 @@
 package taskone;
 
-import taskone.proto.task.Request;
-import taskone.proto.task.Response;
-import taskone.proto.task.Response.ResponseType;
-import taskone.proto.task.Request.RequestType;
-import taskone.proto.task.Data;
-import taskone.proto.task.Task_proto;
-import taskone.proto.task.TaskList_proto;
+import taskone.proto.Request;
+import taskone.proto.Response;
+import taskone.proto.Response.ResponseType;
+import taskone.proto.Request.RequestType;
+import taskone.proto.Data;
+import taskone.proto.Task_proto;
+import taskone.proto.TaskList_proto;
 
 import java.io.IOException;
 import java.io.InputStream;
