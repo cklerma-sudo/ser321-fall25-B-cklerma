@@ -74,7 +74,7 @@ message Data {
   bool completed = 5;
 
   //LIST
-  TaskList tasks = 6;
+  TaskList_proto tasks = 6;
 
   //COMPLETE, ASSIGN and QUIT
   string success_message = 7;
@@ -106,6 +106,6 @@ message Task_proto {
  * TODO: Complete this message definition if needed.
  */
 message TaskList_proto {
-  repeated Task tasks = 1;
+  repeated Task_proto tasks = 1;
   int32 count = 2;
 }
