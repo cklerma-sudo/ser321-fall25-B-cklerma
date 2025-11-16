@@ -61,7 +61,7 @@ message Response {
   ResponseType type = 1;
   bool ok = 2;
   Data data = 3;
-  String req_type =4;
+  string req_type =4;
 
 }
 
