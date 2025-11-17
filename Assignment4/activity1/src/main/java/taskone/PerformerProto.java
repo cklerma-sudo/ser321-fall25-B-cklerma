@@ -99,7 +99,7 @@ public class PerformerProto {
                 case QUIT:
                     return handleQuit();
                 default:
-                    return createErrorResponse(type, "Unknown request type: " + type);
+                    return createErrorResponse(type.toString(), "Unknown request type: " + type);
             }
         } catch (Exception e) {
             return createErrorResponse("error", "Invalid request format: " + e.getMessage());
@@ -221,7 +221,7 @@ public class PerformerProto {
     }
 
 
-    private JSONObject handleQuit() {
+    private Response handleQuit() {
         return createSuccessResponse("quit", "Goodbye!");
     }
 
