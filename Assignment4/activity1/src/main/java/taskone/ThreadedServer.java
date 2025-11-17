@@ -50,7 +50,6 @@ public class ThreadedServer {
                         t.printStackTrace();
                     } finally {
                         System.out.println("Client Disconnected");
-                        clientSocket.close();
                     }
                 });
 
