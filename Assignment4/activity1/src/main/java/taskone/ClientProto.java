@@ -1,23 +1,29 @@
 package taskone;
 
-import java.io.BufferedReader;
+import taskone.proto.Request;
+import taskone.proto.Response;
+import taskone.proto.Response.ResponseType;
+import taskone.proto.Request.RequestType;
+import taskone.proto.Data;
+import taskone.proto.Task_proto;
+import taskone.proto.TaskList_proto;
+
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
-import org.json.JSONObject;
-import org.json.JSONArray;
+
 
 /**
  * Task Management Client.
  * Provides a menu-based interface to interact with the task server.
  * You will need to edit this when you change it to proto
  */
-public class Client {
+public class ClientProto {
     private static Socket socket;
-    private static BufferedReader in;
-    private static PrintWriter out;
+    private static InputStream in;
+    private static OutputStream out;
     private static Scanner scanner;
 
     public static void main(String[] args) {
@@ -42,17 +48,18 @@ public class Client {
             // Connect to server
             System.out.println("Connecting to Task Management Server at " + host + ":" + port);
             socket = new Socket(host, port);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out = new PrintWriter(socket.getOutputStream(), true);
+            in = socket.getInputStream();
+            out = socket.getOutputStream();
 
             // Read welcome message
-            String welcomeMsg = in.readLine();
-            if (welcomeMsg != null) {
-                JSONObject welcome = new JSONObject(welcomeMsg);
-                System.out.println(welcome);
-                if (welcome.getBoolean("ok")) {
-                    System.out.println(welcome.getString("data"));
-                }
+            Response response = Response.parseDelimitedFrom(in);
+            if (!response != null) {
+                String welcomeMsg = response.getData().getSuccessMessage();
+                if (!welcomeMsg.isEmpty()) System.out.println(welcomeMsg);
+            }
+            else {
+                System.out.println("Server closed connection.");
+                return;
             }
 
             // Main menu loop
@@ -137,23 +144,21 @@ public class Client {
         }
 
         // Create request
-        JSONObject request = new JSONObject();
-        request.put("type", "add");
-        request.put("description", description);
-        request.put("priority", priority);
-
+        Request request = Request.newBuilder()
+            .setType(ADD)
+            .setDescription(description)
+            .setPriority(priority)
+            .build();
         // Send request and get response
-        JSONObject response = sendRequest(request);
+        Response response = sendRequest(request);
         if (response != null) {
-            if (response.getBoolean("ok")) {
-                JSONObject taskData = response.getJSONObject("data");
+            if (response.getOk()) {
                 System.out.println("✓ Task added successfully!");
-                System.out.println("  ID: " + taskData.getInt("id"));
-                System.out.println("  Description: " + taskData.getString("description"));
-                System.out.println("  Priority: " + taskData.getString("priority"));
+                System.out.println("  ID: " + response.getData().getId());
+                System.out.println("  Description: " + response.getData().getDescription());
+                System.out.println("  Priority: " + response.getData().getPriority());
             } else {
-                JSONObject error = response.getJSONObject("data");
-                System.out.println("✗ Error: " + error.getString("error"));
+                System.out.println("✗ Error: " + response.getData().getErrorMessage());
             }
         }
     }
@@ -187,32 +192,30 @@ public class Client {
         }
 
         // Create request
-        JSONObject request = new JSONObject();
-        request.put("type", "list");
-        request.put("filter", filter);
+        Request request = Request.newBuilder()
+            .setType(LIST)
+            .setFilter(filter)
+            .build();
 
         // Send request and get response
-        JSONObject response = sendRequest(request);
+        Response response = sendRequest(request);
         if (response != null) {
-            if (response.getBoolean("ok")) {
-                JSONObject data = response.getJSONObject("data");
-                JSONArray tasks = data.getJSONArray("tasks");
-                int count = data.getInt("count");
+            if (response.getOk()) {
+                TaskList_proto list = response.getData().getTasks();
 
-                System.out.println("\n" + filter.toUpperCase() + " TASKS (" + count + "):");
+                System.out.println("\n" + filter.toUpperCase() + " TASKS (" + list.getCount() + "):");
                 System.out.println("─────────────────────────────────────────────────");
 
                 if (count == 0) {
                     System.out.println("No tasks found.");
                 } else {
-                    for (int i = 0; i < tasks.length(); i++) {
-                        JSONObject task = tasks.getJSONObject(i);
+                    for (int i = 0; i < list.getCount(); i++) {
+                        Task_proto task = list.getTasks(i);
                         System.out.println(formatTask(task));
                     }
                 }
             } else {
-                JSONObject error = response.getJSONObject("data");
-                System.out.println("✗ Error: " + error.getString("error"));
+                System.out.println("✗ Error: " + response.getData().getErrorMessage());
             }
         }
     }
@@ -233,19 +236,20 @@ public class Client {
         }
 
         // Create request
-        JSONObject request = new JSONObject();
-        request.put("type", "complete");
-        request.put("id", id);
+        Request request = Request.newBuilder()
+            .setType(COMPLETE)
+            .setId(id)
+            .build();
 
         // Send request and get response
-        JSONObject response = sendRequest(request);
+        Response response = sendRequest(request);
         if (response != null) {
-            if (response.getBoolean("ok")) {
-                JSONObject data = response.getJSONObject("data");
-                System.out.println("✓ " + data.getString("message"));
+            if (response.getOk()) {
+                Data data = response.getData();
+                System.out.println("✓ " + data.getSuccessMessage());
             } else {
-                JSONObject error = response.getJSONObject("data");
-                System.out.println("✗ Error: " + error.getString("error"));
+                Data error = response.getData();
+                System.out.println("✗ Error: " + error.getErrorMessage());
             }
         }
     }
@@ -274,20 +278,21 @@ public class Client {
         }
 
         // Create request
-        JSONObject request = new JSONObject();
-        request.put("type", "assign");
-        request.put("id", id);
-        request.put("assignee", assignee);
+        Request request = Request.newBuilder()
+            .setType(ASSIGN)
+            .setId(id)
+            .setAssignee(assignee)
+            .build();
 
         // Send request and get response
-        JSONObject response = sendRequest(request);
+        Response response = sendRequest(request);
         if (response != null) {
-            if (response.getBoolean("ok")) {
-                JSONObject data = response.getJSONObject("data");
-                System.out.println("✓ " + data.getString("message"));
+            if (response.getOk()) {
+                Data data = response.getData();
+                System.out.println("✓ " + data.getSuccessMessage());
             } else {
-                JSONObject error = response.getJSONObject("data");
-                System.out.println("✗ Error: " + error.getString("error"));
+                Data error = response.getData();
+                System.out.println("✗ Error: " + error.getErrorMessage());
             }
         }
     }
@@ -299,29 +304,31 @@ public class Client {
         System.out.println("\n--- Quitting ---");
 
         // Create request
-        JSONObject request = new JSONObject();
-        request.put("type", "quit");
+        Request request = Request.newBuilder()
+            .setType(QUIT)
+            .build();
 
         // Send request and get response
-        JSONObject response = sendRequest(request);
-        if (response != null && response.getBoolean("ok")) {
-            JSONObject data = response.getJSONObject("data");
-            System.out.println(data.getString("message"));
+        Response response = sendRequest(request);
+        if (response != null && response.getOk()) {
+            Data data = response.getData();
+            System.out.println(data.getSuccessMessage());
         }
     }
 
     /**
      * Send a request to the server and receive response.
      */
-    private static JSONObject sendRequest(JSONObject request) {
+    private static Response sendRequest(Request request) {
         try {
             // Send request
-            out.println(request.toString());
+            request.writeDelimitedTo(out);
+            out.flush();
 
             // Receive response
-            String responseLine = in.readLine();
-            if (responseLine != null) {
-                return new JSONObject(responseLine);
+            Response response = Response.parseDelimitedFrom(in);
+            if (response != null) {
+                return response;
             } else {
                 System.out.println("Error: No response from server");
                 return null;
@@ -335,12 +342,12 @@ public class Client {
     /**
      * Format a task for display.
      */
-    private static String formatTask(JSONObject task) {
-        int id = task.getInt("id");
-        String description = task.getString("description");
-        String priority = task.getString("priority");
-        String assignee = task.getString("assignee");
-        boolean completed = task.getBoolean("completed");
+    private static String formatTask(Task_proto task) {
+        int id = task.getId();
+        String description = task.getDescription();
+        String priority = task.getPriority();
+        String assignee = task.getAssignee();
+        boolean completed = task.getCompleted();
 
         String status = completed ? "[✓] DONE" : "[ ] PENDING";
         String prioritySymbol;
