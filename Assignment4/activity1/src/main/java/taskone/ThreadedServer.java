@@ -12,7 +12,7 @@ import java.net.Socket;
  * - Part B: Multi-threaded server (one thread per client)
  * - Part C: Thread pool server (fixed number of threads)
  */
-public class Server {
+public class ThreadedServer {
     private static final int DEFAULT_PORT = 8888;
     private static TaskList taskList = new TaskList();
 
@@ -30,7 +30,7 @@ public class Server {
         }
 
         System.out.println("Task Management Server starting on port " + port);
-        System.out.println("Mode: Single-threaded (handles one client at a time)");
+        System.out.println("Mode: Multi-threaded (handles many clients at a time)");
         System.out.println("Waiting for clients...");
 
         try (ServerSocket serverSocket = new ServerSocket(port)) {
@@ -39,13 +39,19 @@ public class Server {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Client connected: " + clientSocket.getInetAddress().getHostAddress());
 
-                // Handle client request (BLOCKS - single-threaded)
+                // Handle client request (Multi-threaded)
                 PerformerProto performer = new PerformerProto(clientSocket, taskList);
-                performer.doPerform();
 
-                // Close connection
-                clientSocket.close();
-                System.out.println("Client disconnected");
+                Thread clientThread = new Thread (() -> {
+                    try {
+                        performer.doPerform();
+                    } finally {
+                        System.out.println("Client Disconnect");
+                        clientSocket.close()
+                    }
+                });
+
+                clientThread.start();
             }
         } catch (IOException e) {
             System.err.println("Server error: " + e.getMessage());
