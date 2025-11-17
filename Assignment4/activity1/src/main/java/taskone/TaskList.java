@@ -3,12 +3,10 @@ package taskone;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Random;
 
 /**
  * Task list that manages tasks.
- *
- * NOTE: This class is NOT thread-safe yet. You need to make it thread safe
- * for Part B when implementing the threaded server.
  */
 public class TaskList {
     private final List<Task> tasks;
@@ -25,18 +23,26 @@ public class TaskList {
      * @param priority Task priority (low, medium, high)
      * @return The created Task object
      */
-    public Task addTask(String description, String priority) {
+    public synchronized Task addTask(String description, String priority) {
+        System.out.println("A thread has entered the add task Method");
         Task task = new Task(nextId.getAndIncrement(), description, priority);
         tasks.add(task);
+        Random rand = new Random();
+        int n = rand.nextInt(1000);
+        try {
+            Thread.sleep(n); 
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        System.out.println("A thread has exited the add task Method");
         return task;
-        //maybe we make a timeout in here with a random number not too long but so that thread safety becomes more important. Maybe even some prints for us to see that we are not in the same method at the same time in two threads
     }
 
     /**
      * Get all tasks.
      * @return Copy of task list
      */
-    public List<Task> getAllTasks() {
+    public synchronized List<Task> getAllTasks() {
         return new ArrayList<>(tasks);
     }
 
@@ -44,7 +50,7 @@ public class TaskList {
      * Get pending (incomplete) tasks.
      * @return List of pending tasks
      */
-    public List<Task> getPendingTasks() {
+    public synchronized List<Task> getPendingTasks() {
         List<Task> pending = new ArrayList<>();
         for (Task task : tasks) {
             if (!task.isCompleted()) {
@@ -58,7 +64,7 @@ public class TaskList {
      * Get completed tasks.
      * @return List of completed tasks
      */
-    public List<Task> getCompletedTasks() {
+    public synchronized List<Task> getCompletedTasks() {
         List<Task> completed = new ArrayList<>();
         for (Task task : tasks) {
             if (task.isCompleted()) {
@@ -73,7 +79,7 @@ public class TaskList {
      * @param id Task ID
      * @return Task object or null if not found
      */
-    public Task findTaskById(int id) {
+    public synchronized Task findTaskById(int id) {
         for (Task task : tasks) {
             if (task.getId() == id) {
                 return task;
@@ -87,7 +93,7 @@ public class TaskList {
      * @param id Task ID
      * @return true if successful, false if task not found
      */
-    public boolean completeTask(int id) {
+    public synchronized boolean completeTask(int id) {
         Task task = findTaskById(id);
         if (task != null) {
             task.setCompleted(true);
@@ -102,7 +108,7 @@ public class TaskList {
      * @param assignee Person to assign to
      * @return true if successful, false if task not found
      */
-    public boolean assignTask(int id, String assignee) {
+    public synchronized boolean assignTask(int id, String assignee) {
         Task task = findTaskById(id);
         if (task != null) {
             task.setAssignee(assignee);
@@ -115,7 +121,7 @@ public class TaskList {
      * Get count of tasks.
      * @return Number of tasks
      */
-    public int getTaskCount() {
+    public synchronized int getTaskCount() {
         return tasks.size();
     }
 }
