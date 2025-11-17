@@ -206,7 +206,7 @@ public class ClientProto {
                 System.out.println("\n" + filter.toUpperCase() + " TASKS (" + list.getCount() + "):");
                 System.out.println("─────────────────────────────────────────────────");
 
-                if (count == 0) {
+                if (list.getCount() == 0) {
                     System.out.println("No tasks found.");
                 } else {
                     for (int i = 0; i < list.getCount(); i++) {
