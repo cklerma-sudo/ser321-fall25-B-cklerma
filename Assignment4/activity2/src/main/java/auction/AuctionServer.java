@@ -189,7 +189,7 @@ public class AuctionServer {
             .setType(Response.ResponseType.LEADERBOARD_RESPONSE)
             .setOk(true)
             .setMessage("Top 10 Scores:")
-            .addLeaderboard(leaderboardMsg)
+            .setLeaderboard(leaderboardMsg)
             .build();
         return response;
 
