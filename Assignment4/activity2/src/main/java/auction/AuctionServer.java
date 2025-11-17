@@ -150,7 +150,7 @@ public class AuctionServer {
                 }
 
                 if (response != null) {
-                    if (response.getType() == Response.ResponseType.BID_RESULT && response.getNextItem() == null){
+                    if (response.getType() == Response.ResponseType.BID_RESULT && gameState.getCurrentItemIndex() == 5){
                         response.writeDelimitedTo(out);
                         response = handleGameOver(gameState);
                         response.writeDelimitedTo(out);
@@ -505,6 +505,10 @@ public class AuctionServer {
 
         public Item getCurrentItem() {
             return items.get(currentItemIndex);
+        }
+
+        public int getCurrentItemIndex(){
+            return currentItemIndex;
         }
 
         public int getInventoryValue() {
