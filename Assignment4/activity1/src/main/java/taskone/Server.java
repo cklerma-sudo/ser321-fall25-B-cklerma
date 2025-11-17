@@ -40,7 +40,7 @@ public class Server {
                 System.out.println("Client connected: " + clientSocket.getInetAddress().getHostAddress());
 
                 // Handle client request (BLOCKS - single-threaded)
-                Performer performer = new Performer(clientSocket, taskList);
+                PerformerProto performer = new PerformerProto(clientSocket, taskList);
                 performer.doPerform();
 
                 // Close connection
