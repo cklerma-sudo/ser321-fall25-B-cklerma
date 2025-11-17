@@ -45,8 +45,11 @@ public class ThreadedServer {
                 Thread clientThread = new Thread (() -> {
                     try {
                         performer.doPerform();
+                    }  catch (Throwable t) {
+                        System.err.println("Unexpected error in client handler: " + t.getMessage());
+                        t.printStackTrace();
                     } finally {
-                        System.out.println("Client Disconnect");
+                        System.out.println("Client Disconnected");
                         clientSocket.close()
                     }
                 });
