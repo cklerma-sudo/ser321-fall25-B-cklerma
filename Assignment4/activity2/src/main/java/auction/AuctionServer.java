@@ -154,7 +154,6 @@ public class AuctionServer {
                         response.writeDelimitedTo(out);
                         response = handleGameOver(gameState);
                         response.writeDelimitedTo(out);
-                        break;
                     }
                     else {
                         response.writeDelimitedTo(out);
