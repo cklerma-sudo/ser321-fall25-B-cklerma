@@ -73,6 +73,35 @@ task runClient(type: JavaExec) {
     }
 }
 
+task runProtoServer(type: JavaExec) {
+    group = 'application'
+    description = 'Run the Task Management Server'
+    mainClass = 'taskone.Server'
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+
+    // Allow passing port as argument
+    if (project.hasProperty('port')) {
+        args project.property('port')
+    }
+}
+
+task runProtoClient(type: JavaExec) {
+    group = 'application'
+    description = 'Run the Task Management Client'
+    mainClass = 'taskone.ClientProto'
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+
+    // Allow passing host and port as arguments
+    if (project.hasProperty('host')) {
+        args project.property('host')
+        if (project.hasProperty('port')) {
+            args project.property('port')
+        }
+    }
+}
+
 // Default application main class
 application {
     mainClass = 'taskone.Server'
