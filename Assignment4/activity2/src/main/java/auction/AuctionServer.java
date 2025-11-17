@@ -23,7 +23,7 @@ public class AuctionServer {
     private static LeaderboardManager leaderboard;
 
     // Track connected player names (to prevent duplicates)
-    private static Set<String> activePlayerNames = new HashSet<>();
+    private static Set<String> activePlayerNames = Collections.synchronizedSet(new HashSet<>());
 
     // Grading mode flag
     private static boolean gradingMode = false;
@@ -117,6 +117,10 @@ public class AuctionServer {
                         }
                         break;
                     case JOIN:
+                        if (playerName == null) {
+                            response = buildError("Please set your name first");
+                            break;
+                        }
                         if (gameState != null) {
                             response = buildError("You are already in a game");
                             break;
@@ -176,13 +180,16 @@ public class AuctionServer {
         }
     }
 
-    private static Response handleLeaderBoard(){
-        List<LeaderboardEntry> leaderboard = getTopScores(10);
+    private static Response handleLeaderboard(){
+        List<LeaderboardEntry> topEntries = leaderboard.getTopScores(10);
+        Leaderboard leaderboardMsg = Leaderboard.newBuilder()
+            .addAllEntries(topEntries)
+            .build();
         Response response = Response.newBuilder()
             .setType(Response.ResponseType.LEADERBOARD_RESPONSE)
             .setOk(true)
             .setMessage("Top 10 Scores:")
-            .addLeaderboard(leaderboard)
+            .addLeaderboard(leaderboardMsg)
             .build();
         return response;
 
@@ -232,7 +239,7 @@ public class AuctionServer {
             .addPlayerScores(bot1)
             .addPlayerScores(bot2)
             .setWinnerName(winner)
-            .setLeaderBoardPosition(leaderboardPos)
+            .setLeaderboardPosition(leaderboardPos)
             .build();
              
         Response response = Response.newBuilder()
@@ -255,7 +262,7 @@ public class AuctionServer {
         int largestBid;
         if (playerBid > bot1Bid && playerBid > bot2Bid) {
             winner = gameState.getPlayerName();
-            awardItemToPlayer(gameState.getCurrentItem(), playerBid);
+            gameState.awardItemToPlayer(gameState.getCurrentItem(), playerBid);
             largestBid = playerBid;
         }
         else if (bot2Bid > playerBid && bot2Bid > bot1Bid) {
@@ -280,17 +287,18 @@ public class AuctionServer {
             .setBidAmount(playerBid)
             .build();
          PlayerBid bot1 = PlayerBid.newBuilder()
-            .setPlayerName(gameState.getBot1().getName)
+            .setPlayerName(gameState.getBot1().getName())
             .setBidAmount(bot1Bid)
             .build();
         PlayerBid bot2 = PlayerBid.newBuilder()
-            .setPlayerName(gameState.getBot2().getName)
+            .setPlayerName(gameState.getBot2().getName())
             .setBidAmount(bot2Bid)
             .build();
         AuctionResult result = AuctionResult.newBuilder()
             .setItem(item)
             .setActualValue(gameState.getCurrentItem().getActualValue())
             .setWinnerName(winner)
+            .setWinningBid(largestBid)
             .addAllBids(player)
             .addAllBids(bot1)
             .addAllBids(bot2)
@@ -331,8 +339,6 @@ public class AuctionServer {
     }
     
     private static Response handleJoin(PlayerGameState gameState) {
-        if (gameState.getPlayerName() == null) return buildError("Please set your name first");
-        
         PlayerStats player = PlayerStats.newBuilder().setGoldRemaining(100).build();
         AuctionItem item = AuctionItem.newBuilder()
             .setId(gameState.getCurrentItem().getId())
@@ -348,6 +354,7 @@ public class AuctionServer {
             .setPlayerStats(player)
             .setNextItem(item)
             .build();
+        return response;
 
     }
 
