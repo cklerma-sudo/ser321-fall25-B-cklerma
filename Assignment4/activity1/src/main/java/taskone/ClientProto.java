@@ -53,7 +53,7 @@ public class ClientProto {
 
             // Read welcome message
             Response response = Response.parseDelimitedFrom(in);
-            if (!response != null) {
+            if (response != null) {
                 String welcomeMsg = response.getData().getSuccessMessage();
                 if (!welcomeMsg.isEmpty()) System.out.println(welcomeMsg);
             }
@@ -145,7 +145,7 @@ public class ClientProto {
 
         // Create request
         Request request = Request.newBuilder()
-            .setType(ADD)
+            .setType(RequestType.ADD)
             .setDescription(description)
             .setPriority(priority)
             .build();
@@ -193,7 +193,7 @@ public class ClientProto {
 
         // Create request
         Request request = Request.newBuilder()
-            .setType(LIST)
+            .setType(RequestType.LIST)
             .setFilter(filter)
             .build();
 
@@ -237,7 +237,7 @@ public class ClientProto {
 
         // Create request
         Request request = Request.newBuilder()
-            .setType(COMPLETE)
+            .setType(RequestType.COMPLETE)
             .setId(id)
             .build();
 
@@ -279,7 +279,7 @@ public class ClientProto {
 
         // Create request
         Request request = Request.newBuilder()
-            .setType(ASSIGN)
+            .setType(RequestType.ASSIGN)
             .setId(id)
             .setAssignee(assignee)
             .build();
@@ -305,7 +305,7 @@ public class ClientProto {
 
         // Create request
         Request request = Request.newBuilder()
-            .setType(QUIT)
+            .setType(RequestType.QUIT)
             .build();
 
         // Send request and get response
