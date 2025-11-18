@@ -6,12 +6,12 @@
 To Start and compile the Server use the command "gradle runServer" and that will start the server. For the client it is "gradle runClient". If you wish to use...//TODO finsh specs
 
 ## Implemented Checklist
-[x] Make it multithreaded
-[x] JOIN request
-[x] BID request
-[x] GAME_OVER request
-[x] LEADERBOARD request
-[x] Make Everything Thread Safe
+[x] Make it multithreaded  
+[x] JOIN request  
+[x] BID request  
+[x] GAME_OVER request  
+[x] LEADERBOARD request  
+[x] Make Everything Thread Safe  
 
 ## Design Decisions and Challenges
 The Protocol Buffer method of serialization naturally aligns with the builder design pattern, which I used throughout all request and response objects. I also decided to break each response into its own helper method so the code stays modular, easier to extend, and much simpler to debug or test.
