@@ -153,6 +153,7 @@ public class AuctionServer {
                     if (response.getType() == Response.ResponseType.BID_RESULT && gameState.getCurrentItemIndex() == 5){
                         response.writeDelimitedTo(out);
                         response = handleGameOver(gameState);
+                        gameState = null;
                         response.writeDelimitedTo(out);
                     }
                     else {
