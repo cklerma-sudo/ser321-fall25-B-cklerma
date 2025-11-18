@@ -3,7 +3,7 @@
 ### Link for Video: https://youtu.be/5tAIuOt7SXU
 
 ## How to Compile and Run Server
-To Start and compile the Server use the command "gradle runServer" and that will start the server. For the client it is "gradle runClient". If you wish to use the testing mode or change the port of the server use the command "gradle runServer -Pargs="[Port Number] --grading"". For the Client you can in addtion to the command you can append -Phost="[IP address]" -Pport="[Port Number]".
+To Start and compile the Server use the command "gradle runServer" and that will start the server. For the client it is "gradle runClient". If you wish to use the testing mode or change the port of the server use the command "gradle runServer -Pargs="[Port Number] --grading"". For the Client you can in addtion to the command you can append "-Phost="[IP address]" -Pport="[Port Number]"" to change the port and IP address.
 
 ## Implemented Checklist
 [x] Make it multithreaded  
