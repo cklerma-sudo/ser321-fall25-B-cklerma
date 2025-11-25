@@ -1,1 +1,43 @@
 
+apply plugin: 'java'
+
+description = "Leader/Worker Basic Implementation"
+
+repositories {
+  mavenCentral()
+}
+
+dependencies{
+  implementation "junit:junit:4.12"
+  implementation 'org.json:json:20171018'
+}
+
+task runLeader(type: JavaExec) {
+  group 'Worker/Leader'
+
+  description 'Start Leader- use --args <port> to set port otherwise it defaults to 9000'
+
+  classpath = sourceSets.runtimeClasspath
+
+  main = 'Leader'
+  standardInput = System.in
+
+  if (project.hasProperty('args')) {
+        args project.property('args').split()
+    }
+}
+
+task runWorker(type: JavaExec) {
+  group 'Worker/Leader'
+
+  description 'Start Worker- use --args <IP> <Port> to set port otherwise it defaults to local host and 9000'
+
+  classpath = sourceSets.runtimeClasspath
+
+  main = 'Worker'
+  standardInput = System.in
+
+  if (project.hasProperty('args')) {
+        args project.property('args').split()
+    }
+}
