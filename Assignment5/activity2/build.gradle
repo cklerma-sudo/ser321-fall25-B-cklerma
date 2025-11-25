@@ -17,7 +17,7 @@ task runLeader(type: JavaExec) {
 
   description 'Start Leader- use --args <port> to set port otherwise it defaults to 9000'
 
-  classpath = sourceSets.runtimeClasspath
+  classpath = sourceSets.main.runtimeClasspath
 
   main = 'Leader'
   standardInput = System.in
@@ -32,7 +32,7 @@ task runWorker(type: JavaExec) {
 
   description 'Start Worker- use --args <IP> <Port> to set port otherwise it defaults to local host and 9000'
 
-  classpath = sourceSets.runtimeClasspath
+  classpath = sourceSets.main.runtimeClasspath
 
   main = 'Worker'
   standardInput = System.in
