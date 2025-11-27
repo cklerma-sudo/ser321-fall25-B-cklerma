@@ -33,7 +33,17 @@ public class Leader {
         try {
             ServerSocket serv = new ServerSocket(port);
             workerCount = 0;
-            System.out.println("Waiting for Worker connection...");
+            System.out.println("Waiting for at least 3 Workers to connect...");
+            while (true) {
+                socket = serv.accept();
+                workerCount++;
+                System.out.println("Worker " + workerCount + " connected");
+                workers.add(socket);
+
+                Thread t = new Thread(() -> handleClient(socket, workerCount));
+                t.start();
+                if (workerCount == 3) break;
+            }
             Thread serverThread = new Thread(() -> serverInput());
             serverThread.start();
             while (serverThread.isAlive()) {
@@ -246,3 +256,4 @@ public class Leader {
 
 
 }
+
