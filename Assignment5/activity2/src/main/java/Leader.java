@@ -237,7 +237,7 @@ public class Leader {
             }
         }
 
-        if (maxCount >= workerCount / 2){
+        if (maxCount >= (workerCount + 1) / 2){
             return  "Consensus reached: " + maxValue + " (" + maxCount + "/" + workerCount + " workers agreed)\n";
         }
 
@@ -256,4 +256,5 @@ public class Leader {
 
 
 }
+
 
