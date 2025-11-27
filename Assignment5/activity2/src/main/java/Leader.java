@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.json.*;
 
@@ -229,16 +230,39 @@ public class Leader {
         }
 
         int maxCount = 0;
-        int maxValue = 0;
+        List<Integer> maxValues = new ArrayList<>();
+
         for (Map.Entry<Integer, Integer> entry : counts.entrySet()){
-            if (entry.getValue() > maxCount){
-                maxCount = entry.getValue();
-                maxValue = entry.getKey();
+            int value = entry.getKey();
+            int count = entry.getValue();
+
+            if (count > maxCount) {
+                maxCount = count;
+                maxValues.clear();
+                maxValues.add(value);
+            } else if (count == maxCount) {
+                maxValues.add(value);
             }
         }
 
+
         if (maxCount >= (workerCount + 1) / 2){
-            return  "Consensus reached: " + maxValue + " (" + maxCount + "/" + workerCount + " workers agreed)\n";
+            if (maxValues.size() > 1) {
+                int chosen = ThreadLocalRandom.current().nextInt(maxValues.size());
+                int winner = maxValues.get(chosen);
+
+                StringBuilder sb = new StringBuilder();
+                sb.append("Tie detected among values:\n");
+                for (int v : maxValues) {
+                    sb.append(" - " + v + " (" + counts.get(v) + " votes)\n");
+                }
+
+                sb.append("Randomly selected winner: " + winner + "\n");
+                return sb.toString();
+            }
+            else {
+                return "Consensus reached: " + maxValues.get(0) + " (" + maxCount + "/" + workerCount + " workers agreed)\n";
+            }
         }
 
         else{
@@ -256,5 +280,4 @@ public class Leader {
 
 
 }
-
 
