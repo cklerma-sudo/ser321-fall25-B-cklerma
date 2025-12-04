@@ -63,6 +63,7 @@ message BookSearchRequest {
 message BorrowRequest {
   string isbn = 1;
   string borrower_name = 2;
+  string borrow_date = 3;
 }
 
 // The response for borrowing a book
@@ -75,6 +76,7 @@ message BorrowResponse {
 // The request to return a book
 message ReturnRequest {
   string isbn = 1;
+  string return_date = 2;
 }
 
 // The response for returning a book

@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "service";
+option java_outer_classname = "TriangleProto";
+
+
+package services;
+
+service Triangle {
+  rpc printTriangle (printRequest) returns (printResponse) {}
+  rpc calcArea (calcRequest) returns (calcResponse) {}
+}
+
+message printRequest {
+  string ch = 1;
+  int32 height = 2;
+  string style = 3;
+}
+
+message printResponse {
+  bool isSuccess = 1;
+  string triangle = 2;
+  string error = 3;
+}
+
+message calcRequest {
+  int32 size = 1;
+}
+
+message calcResponse {
+  bool isSuccess = 1;
+  int32 area = 2;
+  string error = 3;
+}

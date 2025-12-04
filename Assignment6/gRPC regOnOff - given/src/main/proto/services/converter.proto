@@ -27,7 +27,7 @@ service Converter {
 
 // The request for unit conversion
 message ConversionRequest {
-  double value = 1;          // The value to convert
+  optional double value = 1;          // The value to convert
   string from_unit = 2;      // Source unit (e.g., "KILOMETER", "POUND", "CELSIUS")
   string to_unit = 3;        // Target unit (e.g., "MILE", "KILOGRAM", "FAHRENHEIT")
 }

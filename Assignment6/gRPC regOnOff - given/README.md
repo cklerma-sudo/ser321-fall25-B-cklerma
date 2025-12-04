@@ -1,9 +1,5 @@
 # GRPC Services and Registry
 
-The following folder contains a Registry.jar which includes a Registering service where Nodes can register to allow clients to find them and use their implemented GRPC services. 
-
-Some more detailed explanations will follow and please also check the build.gradle file
-
 ## Run things locally without registry
 To run see also video. To run locally and without Registry which you should do for the beginning
 
@@ -35,7 +31,7 @@ Will run the Registry node on localhost (arguments are possible see gradle). Thi
 The Server allows Protobuf, JSON and gRPC. We will only be using gRPC
 
 ### gradle runNode
-Will run a node with services. The starter code includes Echo and Joke services as examples. You will need to implement and add the Converter and Library services.
+Will run a node with services. This includes an echo, joke, library, converter, and triangle services.
 
 For the Library service: A books.txt file is provided with initial book data (format: title|author|isbn, one per line). Your server should load this on first run and create library_data.json for persistence.
 
@@ -62,8 +58,32 @@ First run in one terminal:
 Then in second terminal:
     gradle test
 
-The tests connect to localhost:8000 by default.
+## List of Requirements
 
-To run in IDE:
-- go about it like in the ProtoBuf assignment to get rid of errors
-- all mains expect input, so if you want to run them in your IDE you need to provide the inputs for them, see build.gradle
+[x] Server can run with gradle runNode using default settings. 
+
+[x] Client can run with gradle runClient and connects using default settings.
+
+[x] Converter service implemented according to .proto and fully functional.
+
+[x] Library service implemented according to .proto and fully functional.
+
+[x] Client provides a clear menu of services and prompts user for needed inputs.
+
+[x] Client handles all invalid input or server issues without crashing.
+
+[x] Library data persists across server restarts (load on startup, save on change).
+
+[x] Unit tests added for all converter and library RPCs (happy paths + error cases).
+
+[x] Unit tests verify library persistence after server restart.
+
+[x] Create custom .proto defining a new service meeting assignment rules.
+
+[x] Server implements all RPCs for custom service.
+
+[x] Client adds menu option and allows user to interact with custom service.
+
+[x] Server and client remain robust and error-tolerant.
+
+[x] All functionality demonstrated clearly in README and screencast.
