@@ -460,7 +460,7 @@ public class Client {
       boolean loop = true;
       while (loop) {
         System.out.print("What would you like to do today?\n 1 - Echo a message back\n 2 - Hear some jokes\n 3 - Add a joke\n 4 - Convert one measurement unit to another\n 5 - Go to Library Menu\n" +
-                " 6 - Print a Triangle\n 7 - Calculate how many characters for a right triangle\n  q - quit\n");
+                " 6 - Print a Triangle\n 7 - Calculate how many characters for a right triangle\n q - quit\n");
         String choice = reader.readLine();
         switch (choice) {
           case "1":
