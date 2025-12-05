@@ -1,6 +1,6 @@
 # GRPC Services and Registry
 
-### Link to Video: 
+### Link to Video: https://youtu.be/609luHZM7x0
 
 ## Run things locally without registry
 
