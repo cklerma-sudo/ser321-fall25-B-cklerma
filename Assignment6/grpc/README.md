@@ -11,7 +11,7 @@ First Terminal
 Second Terminal
 
     gradle runClient
-
+Note: To connect to AWS server node run it as gradle runClient -PserviceHost="3.134.245.132" -PservicePort="8000"
 ## Run things locally with registry
 
 First terminal
